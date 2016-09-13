@@ -7,7 +7,7 @@ import com.yahoo.squidb.sql.Table;
 
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 
-public class Storage extends SquidDatabase {
+class Storage extends SquidDatabase {
     private static volatile Storage sInstance;
     private static final String DB_NAME = "radio_t_player.db";
     private static final int VERSION = 1;
