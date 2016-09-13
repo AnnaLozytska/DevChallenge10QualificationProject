@@ -30,4 +30,5 @@ dependencies {
     apt 'com.yahoo.squidb:squidb-processor:3.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:converter-simplexml:2.1.0'
+    compile 'org.simpleframework:simple-xml:2.7.1'
 }
