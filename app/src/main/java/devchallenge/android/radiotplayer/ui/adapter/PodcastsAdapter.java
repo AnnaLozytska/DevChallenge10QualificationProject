@@ -4,10 +4,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * Created by alozytska on 13.09.16.
- */
-
 public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.PodcastViewHolder> {
 
 
