@@ -29,8 +29,11 @@ dependencies {
     compile 'com.yahoo.squidb:squidb-annotations:3.0.0'
     compile 'com.yahoo.squidb:squidb-android:3.0.0'
     apt 'com.yahoo.squidb:squidb-processor:3.0.0'
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
-    compile ('com.squareup.retrofit2:converter-simplexml:2.1.0') {
+    // used older version of Retrofit due to removal of ErrorHandler in Retrofit2
+    // https://github.com/square/retrofit/issues/1102
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp:okhttp:2.7.2'
+    compile ('com.squareup.retrofit:converter-simplexml:1.9.0') {
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'

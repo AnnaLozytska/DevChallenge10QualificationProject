@@ -8,7 +8,7 @@ import java.util.List;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 
 @Root(name = "channel")
-public class PodcastsInfoResponce {
+public class PodcastsInfoResponse {
 
     @ElementList(inline=true)
     private List<PodcastInfoModel> podcastInfoModels;

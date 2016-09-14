@@ -1,8 +1,8 @@
 package devchallenge.android.radiotplayer.net;
 
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
+import retrofit.RestAdapter;
+import retrofit.client.OkClient;
+import retrofit.converter.SimpleXMLConverter;
 
 public final class PodcastsInfoNetClient {
     private static volatile PodcastsInfoApi sApi;
@@ -12,12 +12,13 @@ public final class PodcastsInfoNetClient {
     public static PodcastsInfoApi get() {
         synchronized (PodcastsInfoNetClient.class) {
             if (sApi == null) {
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(API_BASE_URL)
-                        .client(new OkHttpClient())
-                        .addConverterFactory(SimpleXmlConverterFactory.create())
-                        .build();
-                sApi = retrofit.create(PodcastsInfoApi.class);
+                RestAdapter.Builder builder = new RestAdapter.Builder()
+                        .setEndpoint(API_BASE_URL)
+                        .setClient(new OkClient())
+                        .setConverter(new SimpleXMLConverter())
+                        .setLogLevel(RestAdapter.LogLevel.FULL);
+                RestAdapter restAdapter = builder.build();
+                sApi = restAdapter.create(PodcastsInfoApi.class);
             }
         }
         return sApi;
