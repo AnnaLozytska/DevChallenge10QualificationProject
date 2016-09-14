@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
-import com.squareup.otto.Produce;
 
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.FeedSyncEvent;
@@ -15,28 +14,20 @@ public class FeedSyncService extends JobService {
     private static final String TAG = FeedSyncService.class.getSimpleName();
 
     private EventManager mEventManager;
-    private Status mCurrentStatus = Status.UNKNOWN;
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        mCurrentStatus = Status.STARTED;
-        postSyncUpdate();
+        if (mEventManager == null) {
+            mEventManager = EventManager.getInstance();
+        }
+        mEventManager.postEvent(new FeedSyncEvent(Status.STARTED));
         Log.d(TAG, "Run Feed sync");
         return false; /* if work is still being done*/
     }
 
     @Override
     public boolean onStopJob(JobParameters jobParameters) {
-        mCurrentStatus = Status.CANCELLED;
-        postSyncUpdate();
+        mEventManager.postEvent(new FeedSyncEvent(Status.CANCELLED));
         return false; // true or false depending on if we need to reschedule
-    }
-
-    @Produce
-    private void postSyncUpdate() {
-        if (mEventManager == null) {
-            mEventManager = EventManager.getInstance();
-        }
-        mEventManager.postEvent(new FeedSyncEvent(mCurrentStatus));
     }
 }

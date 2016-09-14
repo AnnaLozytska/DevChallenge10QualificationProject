@@ -13,7 +13,7 @@ public class FeedSyncEvent extends Event {
         return status;
     }
 
-    public boolean hasUpdates() {
+    public boolean haveUpdates() {
         return haveUpdates;
     }
 

@@ -82,6 +82,7 @@ public class SyncManager {
 
         int result = mDispatcher.schedule(job);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
+            //TODO: think of more precise error handling depending on result code
             EventManager.getInstance().postEvent(new FeedSyncEvent(FeedSyncEvent.Status.FAILED));
         }
     }
