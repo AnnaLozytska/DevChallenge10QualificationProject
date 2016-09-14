@@ -1,4 +1,4 @@
-package devchallenge.android.radiotplayer.util;
+package devchallenge.android.radiotplayer.event;
 
 import android.content.Context;
 import android.os.Handler;
@@ -8,7 +8,7 @@ import android.support.v4.app.Fragment;
 
 import com.squareup.otto.Bus;
 
-import devchallenge.android.radiotplayer.event.Event;
+import devchallenge.android.radiotplayer.util.Utils;
 
 public class EventManager {
 

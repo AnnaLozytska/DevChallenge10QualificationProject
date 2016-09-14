@@ -1,4 +1,4 @@
-package devchallenge.android.radiotplayer.util;
+package devchallenge.android.radiotplayer.repository;
 
 public class PersistentStorageManager {
 

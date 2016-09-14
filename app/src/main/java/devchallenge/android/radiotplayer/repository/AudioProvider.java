@@ -1,7 +1,5 @@
 package devchallenge.android.radiotplayer.repository;
 
-import devchallenge.android.radiotplayer.util.PersistentStorageManager;
-
 public class AudioProvider {
     private static volatile AudioProvider sInstance;
 
