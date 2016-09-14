@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import devchallenge.android.radiotplayer.App;
 import devchallenge.android.radiotplayer.event.EventManager;
-import devchallenge.android.radiotplayer.event.FeedSyncEvent;
+import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
 
 public class SyncManager {
     private static final String TAG = SyncManager.class.getSimpleName();
@@ -60,6 +60,7 @@ public class SyncManager {
         timer.start();
     }
 
+    //TODO separate manual and scheduled syncs
     public void syncFeed() {
         Log.d(TAG, "Starting feed sync...");
         runFeedSyncJob(0);
@@ -69,7 +70,7 @@ public class SyncManager {
     private void runFeedSyncJob(final int jobStartOffset) {
         boolean recurring = jobStartOffset > 0;
         Job job = mDispatcher.newJobBuilder()
-                .setService(FeedSyncService.class)
+                .setService(PodcastsSyncService.class)
                 .setTag(TAG_FEED_SYNC)
                 .setConstraints(
                         Constraint.ON_ANY_NETWORK)
@@ -82,8 +83,9 @@ public class SyncManager {
 
         int result = mDispatcher.schedule(job);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
-            //TODO: think of more precise error handling depending on result code
-            EventManager.getInstance().postEvent(new FeedSyncEvent(FeedSyncEvent.Status.FAILED));
+            PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FAILED);
+            syncEvent.setError("FirebaseJobDispatcher error code " + result);
+            EventManager.getInstance().postEvent(syncEvent);
         }
     }
 }

@@ -18,7 +18,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
+        //TODO: DELETE AFTER TESTING:
         Log.d(TAG, "Launched app...");
-        SyncManager.getInstance().updateFeedSyncSchedule();
+        SyncManager.getInstance().syncFeed();
     }
 }

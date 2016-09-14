@@ -3,12 +3,14 @@ package devchallenge.android.radiotplayer.event;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.squareup.otto.Bus;
 
 import devchallenge.android.radiotplayer.util.Utils;
 
 public class EventManager {
+    private static final String TAG = EventManager.class.getSimpleName();
 
     private static volatile EventManager instance;
     private static final int MSG_POST_EVENT = 1;
@@ -41,6 +43,7 @@ public class EventManager {
     }
 
     public void postEvent(Event event) {
+        Log.i(TAG, "posted " + event);
         if (Utils.isRunningOnMainThread()) {
             eventBus.post(event);
         } else {
