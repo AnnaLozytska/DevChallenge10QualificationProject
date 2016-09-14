@@ -1,10 +1,8 @@
 package devchallenge.android.radiotplayer.event;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 
 import com.squareup.otto.Bus;
 
@@ -15,11 +13,7 @@ public class EventManager {
     private static volatile EventManager instance;
     private static final int MSG_POST_EVENT = 1;
 
-    public static EventManager getInstance(Fragment fragment) {
-        return getInstance(fragment.getContext());
-    }
-
-    public static EventManager getInstance(Context context) {
+    public static EventManager getInstance() {
         if (instance == null) {
             synchronized (EventManager.class) {
                 if (instance == null) {
