@@ -51,7 +51,7 @@ public class SettingsManager {
     public int getPodcastsSyncInterval() {
         return (int) getPreferences()
                 .getLong(getKey(R.string.pref_key_podcasts_sync_interval),
-                        TimeUnit.HOURS.toSeconds(24));
+                        TimeUnit.HOURS.toSeconds(1));
     }
 
     public void setPodcastsSyncInterval() {

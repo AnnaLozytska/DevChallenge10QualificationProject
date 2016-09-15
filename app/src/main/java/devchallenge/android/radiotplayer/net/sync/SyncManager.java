@@ -54,13 +54,13 @@ public class SyncManager implements EventListener {
     }
 
     public void schedulePodcastsSync(int jobStartOffset) {
-        Log.d(TAG, "Scheduling feed sync ...");
+        Log.d(TAG, "Scheduling podcasts sync with interval " + jobStartOffset);
         Job job = mDispatcher.newJobBuilder()
                 .setService(PodcastsSyncService.class)
                 .setTag(PODCASTS_DOWNLOAD_TAG)
                 .setConstraints(
                         Constraint.ON_ANY_NETWORK)
-                .setTrigger(Trigger.executionWindow(jobStartOffset, jobStartOffset + 1))
+                .setTrigger(Trigger.executionWindow(jobStartOffset, jobStartOffset + 10))
                 .setLifetime(Lifetime.FOREVER)
                 .setRecurring(true)
                 .setReplaceCurrent(true)

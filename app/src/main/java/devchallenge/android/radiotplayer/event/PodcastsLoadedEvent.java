@@ -15,4 +15,9 @@ public class PodcastsLoadedEvent extends Event {
     public List<PodcastItem> getPodcasts() {
         return podcasts;
     }
+
+    @Override
+    public String toString() {
+        return PodcastsLoadedEvent.class.getSimpleName() + ": " + podcasts.size() + " podcasts loaded";
+    }
 }

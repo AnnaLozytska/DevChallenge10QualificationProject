@@ -13,8 +13,13 @@ public class PodcastsSyncService extends JobService {
     private PodcastsDownloadTask downloadTask;
 
     @Override
-    public boolean onStartJob(JobParameters jobParameters) {
-        downloadTask = new PodcastsDownloadTask();
+    public boolean onStartJob(final JobParameters jobParameters) {
+        downloadTask = new PodcastsDownloadTask() {
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                jobFinished(jobParameters, false);
+            }
+        };
         downloadTask.execute();
         return true; /* work is still being done*/
     }
