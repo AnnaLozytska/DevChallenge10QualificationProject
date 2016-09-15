@@ -1,9 +1,9 @@
 package devchallenge.android.radiotplayer;
 
 import android.app.Application;
-import android.util.Log;
 
 import devchallenge.android.radiotplayer.net.sync.SyncManager;
+import devchallenge.android.radiotplayer.util.SettingsManager;
 
 public class App extends Application {
     private static final String TAG = App.class.getSimpleName();
@@ -18,8 +18,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-        //TODO: DELETE AFTER TESTING:
-        Log.d(TAG, "Launched app...");
-        SyncManager.getInstance().syncFeed();
+        int syncInterval = SettingsManager.getInstance().getPodcastsSyncInterval();
+        SyncManager.getInstance().schedulePodcastsSync(syncInterval);
     }
 }

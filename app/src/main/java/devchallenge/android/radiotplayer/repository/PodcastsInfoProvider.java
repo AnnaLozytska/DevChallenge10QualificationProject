@@ -11,4 +11,6 @@ public class PodcastsInfoProvider {
         }
         return sInstance;
     }
+
+    //TODO: produce sync status
 }

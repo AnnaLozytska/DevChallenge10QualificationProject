@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">RadioTPlayer</string>
+    <!-- menu -->
+    <string name="manual_sync">Sync</string>
+
     <string name="just_now">Just now</string>
 </resources>

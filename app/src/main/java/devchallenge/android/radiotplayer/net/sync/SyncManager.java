@@ -1,6 +1,5 @@
 package devchallenge.android.radiotplayer.net.sync;
 
-import android.os.CountDownTimer;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -10,16 +9,20 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
+import com.squareup.otto.Subscribe;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.EventListener;
 
 import devchallenge.android.radiotplayer.App;
 import devchallenge.android.radiotplayer.event.EventManager;
+import devchallenge.android.radiotplayer.event.PodcastsLoadedEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
+import devchallenge.android.radiotplayer.net.sync.task.PodcastsDownloadTask;
 
-public class SyncManager {
+public class SyncManager implements EventListener {
     private static final String TAG = SyncManager.class.getSimpleName();
-    private static final String TAG_FEED_SYNC = "feed_sync_tag";
+    private static final String PODCASTS_DOWNLOAD_TAG = "podcasts_download";
 
     private static volatile SyncManager sInstance;
 
@@ -32,52 +35,34 @@ public class SyncManager {
         return sInstance;
     }
 
-    private FirebaseJobDispatcher mDispatcher;
+    private final FirebaseJobDispatcher mDispatcher;
+    private PodcastsDownloadTask mCurrentSyncTask;
+    private EventManager mEventManager;
 
     private SyncManager() {
         Driver driver = new GooglePlayDriver(App.getInstance().getApplicationContext());
         mDispatcher = new FirebaseJobDispatcher(driver);
-        Log.d(TAG, "Launched SyncManager: mDispatcher = " + mDispatcher.toString());
+        mEventManager = EventManager.getInstance();
+        mEventManager.registerEventListener(this);
     }
 
-    public void updateFeedSyncSchedule() {
-        //TODO: get periodicity from Settings
-        Log.d(TAG, "Scheduling feed sync ...");
-        runFeedSyncJob((int) TimeUnit.MINUTES.toSeconds(1));
+    @Subscribe
+    public void onPodcastsLoadedEvent(PodcastsLoadedEvent event) {
         //TODO: DELETE AFTER TESTING:
-        CountDownTimer timer = new CountDownTimer(TimeUnit.MINUTES.toMillis(30), TimeUnit.MINUTES.toMillis(30)) {
-            @Override
-            public void onTick(long l) {
-
-            }
-
-            @Override
-            public void onFinish() {
-                Log.d(TAG, "Stopping recurring sync");
-                mDispatcher.cancel(TAG_FEED_SYNC);
-            }
-        };
-        timer.start();
+        Log.d("---Test---", "Received loaded Podcasts:" + Arrays.toString(event.getPodcasts().toArray()));
+        mEventManager.postEvent(new PodcastsSyncEvent(PodcastsSyncEvent.Status.FINISHED));
     }
 
-    //TODO separate manual and scheduled syncs
-    public void syncFeed() {
-        Log.d(TAG, "Starting feed sync...");
-        runFeedSyncJob(0);
-        updateFeedSyncSchedule();
-    }
-
-    private void runFeedSyncJob(final int jobStartOffset) {
-        boolean recurring = jobStartOffset > 0;
+    public void schedulePodcastsSync(int jobStartOffset) {
+        Log.d(TAG, "Scheduling feed sync ...");
         Job job = mDispatcher.newJobBuilder()
                 .setService(PodcastsSyncService.class)
-                .setTag(TAG_FEED_SYNC)
+                .setTag(PODCASTS_DOWNLOAD_TAG)
                 .setConstraints(
                         Constraint.ON_ANY_NETWORK)
-                .setTrigger(!recurring ? Trigger.NOW
-                        : Trigger.executionWindow(jobStartOffset, jobStartOffset + 1))
+                .setTrigger(Trigger.executionWindow(jobStartOffset, jobStartOffset + 1))
                 .setLifetime(Lifetime.FOREVER)
-                .setRecurring(recurring)
+                .setRecurring(true)
                 .setReplaceCurrent(true)
                 .build();
 
@@ -85,7 +70,25 @@ public class SyncManager {
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
             PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FAILED);
             syncEvent.setError("FirebaseJobDispatcher error code " + result);
-            EventManager.getInstance().postEvent(syncEvent);
+            mEventManager.postEvent(syncEvent);
+        }
+    }
+
+    public void syncPodcastsManualy() {
+        Log.d(TAG, "Starting poscasts sync...");
+        cancelCurrentPodcastsDownload();
+        mCurrentSyncTask = new PodcastsDownloadTask();
+        mCurrentSyncTask.execute();
+    }
+
+    //FIXME: get better solution
+    public void cancelCurrentPodcastsDownload() {
+        //TODO: DELETE AFTER TESTING:
+        Log.d("---Test---", "Trying to cancel current task");
+        if (mCurrentSyncTask != null && !mCurrentSyncTask.isCancelled()) {
+            mCurrentSyncTask.cancel(true);
+            //TODO: DELETE AFTER TESTING:
+            Log.d("---Test---", "Task is cancelled: " + mCurrentSyncTask.isCancelled());
         }
     }
 }

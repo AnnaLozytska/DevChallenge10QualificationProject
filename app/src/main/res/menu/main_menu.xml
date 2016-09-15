@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:compat="http://schemas.android.com/apk/res-auto/android">
+    <item
+        android:id="@+id/manual_sync"
+        style="@android:style/Widget.ActionButton"
+        compat:actionLayout="@layout/action_sync"
+        android:icon="@drawable/ic_sync_white_24dp"
+        android:title="@string/manual_sync"
+        compat:showAsAction="ifRoom" />
+</menu>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_key_podcasts_sync_interval" translatable="false">podcasts_sync_interval </string>
+</resources>

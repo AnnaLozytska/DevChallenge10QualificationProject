@@ -1,7 +1,7 @@
 package devchallenge.android.radiotplayer.net;
 
-import devchallenge.android.radiotplayer.net.responce.PodcastsInfoResponse;
-import retrofit2.http.GET;
+import devchallenge.android.radiotplayer.net.model.responce.PodcastsInfoResponse;
+import retrofit.http.GET;
 
 public interface PodcastsInfoApi {
 
