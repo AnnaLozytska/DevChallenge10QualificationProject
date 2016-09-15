@@ -11,11 +11,12 @@ import android.widget.ImageButton;
 import com.squareup.otto.Subscribe;
 
 import java.util.EventListener;
+import java.util.concurrent.TimeUnit;
 
 import devchallenge.android.radiotplayer.R;
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
-import devchallenge.android.radiotplayer.net.sync.SyncManager;
+import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
 
 public class MainActivity extends AppCompatActivity implements EventListener {
 
@@ -23,14 +24,14 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     private View.OnClickListener mStartSyncListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            SyncManager.getInstance().syncPodcastsManualy();
+            PodcastsInfoProvider.getInstance().startManualSync();
 
         }
     };
     private View.OnClickListener mCancelSyncListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            SyncManager.getInstance().cancelCurrentPodcastsDownload();
+            PodcastsInfoProvider.getInstance().cancelSync();
         }
     };
 
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        //TODO: disable sync if no network available
         getMenuInflater().inflate(R.menu.main_menu, menu);
         mSync = (ImageButton) menu.findItem(R.id.manual_sync).getActionView();
         mSync.setOnClickListener(mStartSyncListener);
@@ -72,8 +74,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                     mSync.setOnClickListener(mCancelSyncListener);
                     break;
                 case FINISHED:
+                    boolean isRecent =
+                            (System.currentTimeMillis() - event.getEventTimestamp())
+                                    <= TimeUnit.MINUTES.toMillis(10);
                     mSync.clearAnimation();
-                    mSync.setImageResource(R.drawable.ic_done_white_24dp);
+                    mSync.setImageResource(isRecent ? R.drawable.ic_done_white_24dp
+                            : R.drawable.ic_sync_white_24dp);
                     mSync.setOnClickListener(mStartSyncListener);
                     break;
                 case FAILED:

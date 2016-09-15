@@ -16,7 +16,7 @@ public final class PodcastsInfoNetClient {
                         .setEndpoint(API_BASE_URL)
                         .setClient(new OkClient())
                         .setConverter(new SimpleXMLConverter())
-                        .setLogLevel(RestAdapter.LogLevel.FULL);
+                        .setLogLevel(RestAdapter.LogLevel.BASIC);
                 RestAdapter restAdapter = builder.build();
                 sApi = restAdapter.create(PodcastsInfoApi.class);
             }

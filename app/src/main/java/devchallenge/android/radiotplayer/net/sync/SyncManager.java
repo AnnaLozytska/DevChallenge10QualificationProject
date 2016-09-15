@@ -9,16 +9,13 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
-import com.squareup.otto.Subscribe;
 
-import java.util.Arrays;
 import java.util.EventListener;
 
 import devchallenge.android.radiotplayer.App;
 import devchallenge.android.radiotplayer.event.EventManager;
-import devchallenge.android.radiotplayer.event.PodcastsLoadedEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
-import devchallenge.android.radiotplayer.net.sync.task.PodcastsDownloadTask;
+import devchallenge.android.radiotplayer.net.sync.task.PodcastsDownloadTaskAsync;
 
 public class SyncManager implements EventListener {
     private static final String TAG = SyncManager.class.getSimpleName();
@@ -36,7 +33,7 @@ public class SyncManager implements EventListener {
     }
 
     private final FirebaseJobDispatcher mDispatcher;
-    private PodcastsDownloadTask mCurrentSyncTask;
+    private PodcastsDownloadTaskAsync mCurrentSyncTask;
     private EventManager mEventManager;
 
     private SyncManager() {
@@ -44,13 +41,6 @@ public class SyncManager implements EventListener {
         mDispatcher = new FirebaseJobDispatcher(driver);
         mEventManager = EventManager.getInstance();
         mEventManager.registerEventListener(this);
-    }
-
-    @Subscribe
-    public void onPodcastsLoadedEvent(PodcastsLoadedEvent event) {
-        //TODO: DELETE AFTER TESTING:
-        Log.d("---Test---", "Received loaded Podcasts:" + Arrays.toString(event.getPodcasts().toArray()));
-        mEventManager.postEvent(new PodcastsSyncEvent(PodcastsSyncEvent.Status.FINISHED));
     }
 
     public void schedulePodcastsSync(int jobStartOffset) {
@@ -76,19 +66,15 @@ public class SyncManager implements EventListener {
 
     public void syncPodcastsManualy() {
         Log.d(TAG, "Starting poscasts sync...");
-        cancelCurrentPodcastsDownload();
-        mCurrentSyncTask = new PodcastsDownloadTask();
+        cancelCurrentPodcastsSync();
+        mCurrentSyncTask = new PodcastsDownloadTaskAsync();
         mCurrentSyncTask.execute();
     }
 
     //FIXME: get better solution
-    public void cancelCurrentPodcastsDownload() {
-        //TODO: DELETE AFTER TESTING:
-        Log.d("---Test---", "Trying to cancel current task");
-        if (mCurrentSyncTask != null && !mCurrentSyncTask.isCancelled()) {
-            mCurrentSyncTask.cancel(true);
-            //TODO: DELETE AFTER TESTING:
-            Log.d("---Test---", "Task is cancelled: " + mCurrentSyncTask.isCancelled());
+    public void cancelCurrentPodcastsSync() {
+        if (mCurrentSyncTask != null) {
+            mCurrentSyncTask.cancel();
         }
     }
 }
