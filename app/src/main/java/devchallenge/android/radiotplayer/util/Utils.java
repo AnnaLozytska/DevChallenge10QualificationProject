@@ -3,7 +3,10 @@ package devchallenge.android.radiotplayer.util;
 import android.content.Context;
 import android.os.Looper;
 import android.text.format.DateUtils;
+import android.util.Log;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
@@ -32,6 +35,21 @@ public class Utils {
 
     public static final boolean isEmpty(Collection<?> list) {
         return list == null || list.size() == 0;
+    }
+
+    public static long convertToTimestamp(String formattedTime) {
+        SimpleDateFormat parsingFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+        Date date = null;
+        long timestamp = -1;
+        try {
+            date = parsingFormat.parse(formattedTime);
+        } catch (ParseException e) {
+            Log.e("TimeFormattingUtil", "Date has incompatible format. Input string should be checked");
+        }
+        if (date != null) {
+            timestamp = date.getTime();
+        }
+        return timestamp;
     }
 
     public static String formatTime(Context context, Date date) {

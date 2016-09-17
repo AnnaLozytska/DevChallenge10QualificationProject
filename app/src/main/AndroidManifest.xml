@@ -22,7 +22,7 @@
         </activity>
 
         <service
-            android:name=".service.PodcastPlayerService"
+            android:name=".service.PlayerService"
             android:enabled="true"/>
 
         <service android:name=".net.sync.PodcastsSyncService"

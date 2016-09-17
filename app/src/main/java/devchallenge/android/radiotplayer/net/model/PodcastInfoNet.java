@@ -13,7 +13,7 @@ import org.simpleframework.xml.Root;
         @Namespace(reference = "http://www.itunes.com/dtds/podcast-1.0.dtd", prefix = "itunes"),
         @Namespace(reference = "http://search.yahoo.com/mrss/", prefix = "media")
 })
-public class PodcastItem {
+public class PodcastInfoNet {
 
     @Element(name = "title")
     private String title;
@@ -29,17 +29,15 @@ public class PodcastItem {
 
     @Path("enclosure")
     @Attribute(name = "url")
-    private String enclosureUrl;
+    private String audioUrl;
 
     @Path("enclosure")
     @Attribute(name = "length")
-    private String length;
+    private int length;
 
     @Path("content")
     @Attribute(name = "fileSize")
     private long fileSize;
-
-    private String imageUrl;
 
     public String getTitle() {
         return title;
@@ -49,38 +47,34 @@ public class PodcastItem {
         return publishedDate;
     }
 
-    public String getSummary() {
-        return summary;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public String getLength() {
+    public String getSummary() {
+        return summary;
+    }
+
+    public String getAudioUrl() {
+        // workaround for the case when enclosure tag in not provided (yes, it happens!)
+        if (audioUrl == null) {
+            String audioRef = description.substring(description.indexOf("audio src=\"") + 11);
+            int end = audioRef.indexOf(".mp3\"") + 4;
+            audioUrl = audioRef.substring(0, end);
+        }
+        return audioUrl;
+    }
+
+    public String getImageUrl() {
+        // workaround for getting podcast cover image as there is no separate tag for it (hopefully, yet)
+        return description.substring(description.indexOf("img src=\"") + 9, description.indexOf(".jpg\"") + 4);
+    }
+
+    public int getLength() {
         return length;
     }
 
     public long getFileSize() {
         return fileSize;
-    }
-
-    public String getEnclosureUrl() {
-        // workaround for the case when enclosure tag in not provided (yes, it happens!)
-        if (enclosureUrl == null) {
-            String audioRef = description.substring(description.indexOf("audio src=\"") + 11);
-            int end = audioRef.indexOf(".mp3\"") + 4;
-            enclosureUrl = audioRef.substring(0, end);
-        }
-        return enclosureUrl;
-    }
-
-    public String getImageUrl() {
-        // workaround for getting podcast cover image as there is no separate tag for it (hopefully, yet)
-        if (imageUrl == null) {
-            imageUrl = description.substring(description.indexOf("img src=\"") + 9,
-                    description.indexOf(".jpg\"") + 4);
-        }
-        return imageUrl;
     }
 }

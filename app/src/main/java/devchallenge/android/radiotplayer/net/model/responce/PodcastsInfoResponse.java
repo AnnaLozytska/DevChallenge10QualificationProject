@@ -6,7 +6,7 @@ import org.simpleframework.xml.Root;
 
 import java.util.List;
 
-import devchallenge.android.radiotplayer.net.model.PodcastItem;
+import devchallenge.android.radiotplayer.net.model.PodcastInfoNet;
 
 @Root(strict = false)
 public class PodcastsInfoResponse {
@@ -14,16 +14,16 @@ public class PodcastsInfoResponse {
     @Element(name = "channel")
     private Channel channel;
 
-    public List<PodcastItem> getPodcasts() {
+    public List<PodcastInfoNet> getPodcasts() {
         return channel.getPodcastItems();
     }
 
     @Root(strict = false)
     public static class Channel {
         @ElementList(inline = true)
-        private List<PodcastItem> podcastItems;
+        private List<PodcastInfoNet> podcastItems;
 
-        public List<PodcastItem> getPodcastItems() {
+        public List<PodcastInfoNet> getPodcastItems() {
             return podcastItems;
         }
     }
