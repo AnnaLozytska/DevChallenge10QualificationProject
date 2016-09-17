@@ -7,4 +7,9 @@
     android:orientation="vertical"
     tools:context="devchallenge.android.radiotplayer.ui.activity.MainActivity">
 
+    <fragment
+        android:name="devchallenge.android.radiotplayer.ui.fragment.PodcastsFragment"
+        android:id="@+id/podcasts_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

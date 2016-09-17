@@ -141,11 +141,8 @@ public class PersistentStorageManager {
      * @throws FileNotFoundException if podcast hasn't been save. So make sure to check it beforehand
      *  by calling {@link #getItemStatus(String)}
      */
-    public Uri getItemLocalUri(String itemTitle) throws FileNotFoundException {
+    public Uri getItemLocalUri(String itemTitle) {
         File file = new File(STORAGE_DIR, itemTitle + ".mp3" );
-        if (!file.exists()) {
-            throw new FileNotFoundException();
-        }
         return Uri.fromFile(file);
     }
 

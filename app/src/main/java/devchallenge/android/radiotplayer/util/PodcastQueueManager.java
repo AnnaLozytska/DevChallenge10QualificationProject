@@ -98,10 +98,10 @@ public class PodcastQueueManager {
 
     private void updateItemsDownloadStatus() {
         for (PodcastInfoModel item : queue) {
-            DownloadStatus itemStatus = mStorageManager.getItemStatus(item);
+            DownloadStatus itemStatus = mStorageManager.getItemStatus(item.getTitle());
             item.setDownloadStatus(itemStatus);
             if (itemStatus == DownloadStatus.DOWNLOADED) {
-                item.setLocalAudioUri(mStorageManager.getItemLocalUri(item));
+                item.setLocalAudioUri(mStorageManager.getItemLocalUri(item.getTitle()));
             }
         }
     }
