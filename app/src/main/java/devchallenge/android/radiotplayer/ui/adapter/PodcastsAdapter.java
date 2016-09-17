@@ -3,6 +3,7 @@ package devchallenge.android.radiotplayer.ui.adapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.PodcastViewHolder> {
 
@@ -24,6 +25,9 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
 
     public static class PodcastViewHolder extends RecyclerView.ViewHolder {
 
+
+        ImageView image;
+        ImageView
         public PodcastViewHolder(View itemView) {
             super(itemView);
         }
