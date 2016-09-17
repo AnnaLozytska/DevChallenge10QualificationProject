@@ -1,10 +1,12 @@
 package devchallenge.android.radiotplayer.repository;
 
+import com.yahoo.squidb.android.AndroidOpenHelper;
 import com.yahoo.squidb.data.ISQLiteDatabase;
 import com.yahoo.squidb.data.ISQLiteOpenHelper;
 import com.yahoo.squidb.data.SquidDatabase;
 import com.yahoo.squidb.sql.Table;
 
+import devchallenge.android.radiotplayer.App;
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 
 class Storage extends SquidDatabase {
@@ -45,6 +47,6 @@ class Storage extends SquidDatabase {
 
     @Override
     protected ISQLiteOpenHelper createOpenHelper(String databaseName, OpenHelperDelegate delegate, int version) {
-        return null;
+        return new AndroidOpenHelper(App.getInstance(), databaseName, delegate, version);
     }
 }

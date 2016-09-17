@@ -18,6 +18,6 @@ public class PodcastsLoadedEvent extends Event {
 
     @Override
     public String toString() {
-        return PodcastsLoadedEvent.class.getSimpleName() + ": " + podcasts.size() + " podcasts loaded";
+        return getClass().getSimpleName() + ": " + podcasts.size() + " podcasts loaded";
     }
 }

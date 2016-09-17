@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -39,11 +38,11 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
     private PodcastQueueManager mQueueManager;
     private PodcastInfoModel mCurrentPodcast;
 
-    private final AudioManager mAudioManager;
+    private AudioManager mAudioManager;
     private int mAudioFocus = AudioManager.AUDIOFOCUS_LOSS;
     private boolean mPausedOnAudioFocusLoss;
 
-    private final WifiManager.WifiLock mWifiLock;
+    private WifiManager.WifiLock mWifiLock;
     private EventManager mEventmanager;
     private Binder mBinder = new PlayerBinder();
 
@@ -52,15 +51,12 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
-    public PlayerService() {
-        mAudioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-        this.mWifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE))
-                .createWifiLock(WifiManager.WIFI_MODE_FULL, WIFI_LOCK);
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
+        mAudioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        this.mWifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE))
+                .createWifiLock(WifiManager.WIFI_MODE_FULL, WIFI_LOCK);
         mQueueManager = PodcastQueueManager.getInstance();
         mEventmanager = EventManager.getInstance();
     }

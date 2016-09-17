@@ -1,21 +1,25 @@
 package devchallenge.android.radiotplayer.repository;
 
-import android.util.Log;
-
 import com.squareup.otto.Subscribe;
 import com.yahoo.squidb.data.SquidCursor;
 import com.yahoo.squidb.data.SquidDatabase;
 import com.yahoo.squidb.sql.Query;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PodcastsLoadedEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
+import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 import devchallenge.android.radiotplayer.net.model.PodcastInfoNet;
 import devchallenge.android.radiotplayer.net.sync.SyncManager;
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 import devchallenge.android.radiotplayer.util.Utils;
+import rx.Observable;
+import rx.Subscriber;
 
 public class PodcastsInfoProvider {
     private static volatile PodcastsInfoProvider sInstance;
@@ -40,34 +44,26 @@ public class PodcastsInfoProvider {
         mEventManager.registerEventListener(this);
     }
 
-    @Subscribe
-    public void onPodcastsLoaded(final PodcastsLoadedEvent event) {
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
+    public Observable<List<PodcastInfoModel>> getPodcasts() {
+        return Observable.create(new Observable.OnSubscribe<List<PodcastInfoModel>>() {
             @Override
-            public void run() {
-                //TODO: DELETE AFTER TESTING:
-                Log.d("---Test---", "Received loaded data in provider...");
+            public void call(Subscriber<? super List<PodcastInfoModel>> subscriber) {
+                List<PodcastInfoModel> podcastInfoModels;
+                Query selectAll = Query.select();
+                SquidCursor<PodcastInfoRow> cursor = mDatabase.query(PodcastInfoRow.class, selectAll);
 
-                boolean haveUpdates;
-
-                for (PodcastInfoNet netModel : event.getPodcasts()) {
-                    PodcastInfoRow syncRow = rowFromNetModel(netModel);
-                    Query selectByTitle = Query.select().where(PodcastInfoRow.TITLE.eq(syncRow.getTitle()));
-                    SquidCursor<PodcastInfoRow> cursor = mDatabase.query(PodcastInfoRow.class, selectByTitle);
-                    if (cursor.moveToFirst()) {
-                        PodcastInfoRow rowInDb = new PodcastInfoRow();
-                        rowInDb.readPropertiesFromCursor(cursor);
-                        if (!syncRow.equals(rowInDb)) {
-
-                        }
-                    } else {
-
+                if (cursor.moveToFirst()) {
+                     podcastInfoModels = new ArrayList<>(cursor.getCount());
+                    for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                        PodcastInfoRow row = new PodcastInfoRow();
+                        row.readPropertiesFromCursor(cursor);
+                        podcastInfoModels.add(modelFromRow(row));
                     }
+                } else {
+                    podcastInfoModels = Collections.emptyList();
                 }
-
-                PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FINISHED);
-                mEventManager.postEvent(syncEvent);
-
+                subscriber.onNext(podcastInfoModels);
+                subscriber.onCompleted();
             }
         });
     }
@@ -80,10 +76,51 @@ public class PodcastsInfoProvider {
         mSyncManager.cancelCurrentPodcastsSync();
     }
 
+    @Subscribe
+    public void onPodcastsLoaded(final PodcastsLoadedEvent event) {
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                boolean haveUpdates = false;
+
+                for (PodcastInfoNet netModel : event.getPodcasts()) {
+                    PodcastInfoRow syncPodcast = rowFromNetModel(netModel);
+
+                    Query selectByTitle = Query.select().where(PodcastInfoRow.TITLE.eq(syncPodcast.getTitle()));
+                    SquidCursor<PodcastInfoRow> cursor = mDatabase.query(PodcastInfoRow.class, selectByTitle);
+
+                    boolean updatedDb = false;
+                    if (cursor.moveToFirst()) {
+                        PodcastInfoRow podcastInDb = new PodcastInfoRow();
+                        podcastInDb.readPropertiesFromCursor(cursor);
+                        // We set same id to ensure that only difference of info values will be checked:
+                        syncPodcast.setId(podcastInDb.getId());
+
+                        if (!syncPodcast.equals(podcastInDb)) {
+                            updatedDb = mDatabase.persist(syncPodcast);
+                            //TODO handle case when for some reason database didn't persist data
+                        }
+                    } else {
+                        updatedDb = mDatabase.persist(syncPodcast);
+                    }
+                    if (updatedDb && !haveUpdates) {
+                        haveUpdates = true;
+                    }
+                }
+
+                PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FINISHED);
+                syncEvent.setHaveUpdates(haveUpdates);
+                mEventManager.postEvent(syncEvent);
+            }
+        });
+    }
+
+    // use models convertion to loose coupling between network, storage and business layers
+
     private static PodcastInfoRow rowFromNetModel(PodcastInfoNet netModel) {
         PodcastInfoRow row = new PodcastInfoRow();
         row.setTitle(netModel.getTitle());
-        row.setPublishedDate(Utils.convertToTimestamp(netModel.getPublishedDate()));
+        row.setPublishedTimestamp(Utils.convertToTimestamp(netModel.getPublishedDate()));
         row.setDescription(netModel.getDescription());
         row.setSummary(netModel.getSummary());
         row.setAudioUrl(netModel.getAudioUrl());
@@ -91,5 +128,9 @@ public class PodcastsInfoProvider {
         row.setLength(netModel.getLength());
         row.setFileSize(netModel.getFileSize());
         return row;
+    }
+
+    private static PodcastInfoModel modelFromRow(PodcastInfoRow row) {
+        return new PodcastInfoModel(row);
     }
 }

@@ -59,7 +59,7 @@ public class PodcastsSyncEvent extends Event {
 
     @Override
     public String toString() {
-        return PodcastsSyncEvent.class.getSimpleName() + ": status=" + status.name()
+        return getClass().getSimpleName() + ": status=" + status.name()
                 + ", haveUpdates=" + haveUpdates
                 + ", error=" + error
                 + ", isPersisted=" + isPersisted;
