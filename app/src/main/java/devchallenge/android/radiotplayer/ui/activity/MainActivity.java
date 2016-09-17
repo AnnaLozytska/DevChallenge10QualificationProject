@@ -11,6 +11,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
 
@@ -18,6 +19,7 @@ import java.util.EventListener;
 import java.util.concurrent.TimeUnit;
 
 import devchallenge.android.radiotplayer.R;
+import devchallenge.android.radiotplayer.event.DownloadUpdateEvent;
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
 import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
@@ -26,8 +28,10 @@ import devchallenge.android.radiotplayer.service.PlayerService;
 public class MainActivity extends AppCompatActivity implements EventListener {
 
     //TODO: DELETE AFTER TESTING:
+    TextView downloading;
     Button download;
     Button stop;
+
 
     private PlayerService mPlayer;
     boolean mIsPlayerBound = false;
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        downloading = (TextView) findViewById(R.id.test_tv);
         download = (Button) findViewById(R.id.download);
         stop = (Button) findViewById(R.id.stop);
 
@@ -92,6 +97,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         super.onStop();
         EventManager.getInstance().unregisterEventListener(this);
         unbindService(mPlayerConnection);
+    }
+
+    //TODO: DELETE AFTER TESTING:
+    @Subscribe
+    public void onDownloadUpdates(DownloadUpdateEvent update) {
+        downloading
     }
 
     @Subscribe

@@ -2,6 +2,7 @@ package devchallenge.android.radiotplayer.util;
 
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -10,13 +11,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import devchallenge.android.radiotplayer.event.DownloadUpdateEvent;
 import devchallenge.android.radiotplayer.event.EventManager;
-import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 
 public class PersistentStorageManager {
     private static volatile PersistentStorageManager sInstance;
@@ -32,26 +35,31 @@ public class PersistentStorageManager {
         return sInstance;
     }
 
+    private Map<String, Future> downloadingItems;
     private ThreadPoolExecutor mExecutor;
     private EventManager mEventManager;
 
     private PersistentStorageManager() {
+        downloadingItems = new HashMap<>();
         mExecutor = new ThreadPoolExecutor(0, MAX_SIMULTANIOUS_DOWNLOADS,
                 1, TimeUnit.MINUTES,
                 new LinkedBlockingQueue<Runnable>());
         mEventManager = EventManager.getInstance();
     }
 
-    public void downloadItemAsync(final PodcastInfoModel item) {
-        mExecutor.execute(new Runnable() {
+    public void downloadItemAsync(final String itemTitle, String downloadUrl) {
+        final Future future = mExecutor.submit(getItemDownloadRunnable(itemTitle, downloadUrl));
+        downloadingItems.put(itemTitle, future);
+    }
+
+    @NonNull
+    private Runnable getItemDownloadRunnable(final String itemTitle, final String downloadUrl) {
+        return new Runnable() {
             @Override
             public void run() {
-                File dir = new File(STORAGE_DIR);
-                dir.mkdirs();
-
                 HttpURLConnection urlConnection = null;
                 try {
-                    URL audioUrl = new URL(item.getAudioUri().getPath());
+                    URL audioUrl = new URL(downloadUrl);
                     urlConnection = (HttpURLConnection) audioUrl.openConnection();
                     urlConnection.setRequestMethod("GET");
 
@@ -59,10 +67,13 @@ public class PersistentStorageManager {
                     int totalSize = urlConnection.getContentLength();
                     int current = 0;
 
-                    item.setDownloadStatus(DownloadStatus.DOWNLOADING);
-                    mEventManager.postEvent(new DownloadUpdateEvent(item, current, totalSize));
+                    mEventManager.postEvent(
+                            new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADING,
+                                    current, totalSize));
 
-                    File audioFile = new File(dir, item.getTitle() + ".mp3");
+                    File dir = new File(STORAGE_DIR);
+                    dir.mkdirs();
+                    File audioFile = new File(dir, itemTitle + ".mp3");
                     FileOutputStream fileOutput = new FileOutputStream(audioFile);
                     int downloadedSize = 0;
                     while ((current = bis.read()) != -1) {
@@ -71,45 +82,67 @@ public class PersistentStorageManager {
                         // send updates only on each Mb to avoid redundant work related to posting
                         // and handling this event
                         if (downloadedSize % (1024 * 1024) == 0) {
-                            mEventManager.postEvent(new DownloadUpdateEvent(item, downloadedSize, totalSize));
+                            mEventManager.postEvent(
+                                    new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADING,
+                                            downloadedSize, totalSize));
                         }
                     }
                     fileOutput.flush();
                     fileOutput.close();
 
-                    item.setDownloadStatus(DownloadStatus.DOWNLOADED);
-                    mEventManager.postEvent(new DownloadUpdateEvent(item));
+                    mEventManager.postEvent(
+                            new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADED));
                 } catch (IOException e) {
                     e.printStackTrace();
-                    item.setDownloadStatus(DownloadStatus.FAILED);
-                    mEventManager.postEvent(new DownloadUpdateEvent(item));
+                    mEventManager.postEvent(
+                            new DownloadUpdateEvent(itemTitle, DownloadStatus.FAILED));
                 } finally {
                     if (urlConnection != null) {
                         urlConnection.disconnect();
                     }
+                    downloadingItems.remove(itemTitle);
                 }
             }
-        });
+        };
     }
 
+    public boolean cancelDownload(String itemTitle) {
+        if (downloadingItems.containsKey(itemTitle)) {
+            Future itemFuture = downloadingItems.get(itemTitle);
+            if (itemFuture.isDone() || itemFuture.isCancelled()) {
+                // cleanup list if for some reason it is still there
+                downloadingItems.remove(itemTitle);
+                return true;
+            } else {
+                return itemFuture.cancel(true);
+            }
+        } else {
+            return true;
+        }
+    }
 
-    public DownloadStatus getItemStatus(PodcastInfoModel item) {
-        File file = new File(STORAGE_DIR, item.getTitle() + ".mp3" );
+    public DownloadStatus getItemStatus(String itemTitle) {
+        if (downloadingItems.containsKey(itemTitle)) {
+            return DownloadStatus.DOWNLOADING;
+        }
+
+        File file = new File(STORAGE_DIR, itemTitle + ".mp3" );
         if (file.exists()) {
             return DownloadStatus.DOWNLOADED;
         }
+
         return DownloadStatus.NOT_DOWNLOADED;
     }
 
     /**
      * Returns Uri of local podcast audio copy
-     * @param item
+     * @param itemTitle
      * @return
      * @throws FileNotFoundException if podcast hasn't been save. So make sure to check it beforehand
-     *  by calling {@link #getItemStatus(PodcastInfoModel)}
+     *  by calling {@link #getItemStatus(String)}
      */
-    public Uri getItemLocalUri(PodcastInfoModel item) throws FileNotFoundException {
-        File file = new File(STORAGE_DIR, item.getTitle() + ".mp3" );
+    public Uri getItemLocalUri(String itemTitle) throws FileNotFoundException {
+        File file = new File(STORAGE_DIR, itemTitle + ".mp3" );
         if (!file.exists()) {
             throw new FileNotFoundException();
         }

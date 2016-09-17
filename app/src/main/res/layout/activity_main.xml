@@ -12,7 +12,7 @@
     tools:context="devchallenge.android.radiotplayer.ui.activity.MainActivity">
 
     <TextView
-        android:id="@+id/playing_url"
+        android:id="@+id/test_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
