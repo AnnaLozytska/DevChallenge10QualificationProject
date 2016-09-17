@@ -4,7 +4,7 @@ import android.net.Uri;
 
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 
-import static devchallenge.android.radiotplayer.repository.PersistentStorageManager.DownloadStatus;
+import static devchallenge.android.radiotplayer.util.PersistentStorageManager.DownloadStatus;
 
 
 public class PodcastInfoModel {

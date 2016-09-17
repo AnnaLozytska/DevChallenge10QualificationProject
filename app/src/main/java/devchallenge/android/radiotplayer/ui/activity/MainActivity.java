@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.squareup.otto.Subscribe;
@@ -23,6 +24,10 @@ import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
 import devchallenge.android.radiotplayer.service.PlayerService;
 
 public class MainActivity extends AppCompatActivity implements EventListener {
+
+    //TODO: DELETE AFTER TESTING:
+    Button download;
+    Button stop;
 
     private PlayerService mPlayer;
     boolean mIsPlayerBound = false;
@@ -60,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        download = (Button) findViewById(R.id.download);
+        stop = (Button) findViewById(R.id.stop);
+
     }
 
     @Override

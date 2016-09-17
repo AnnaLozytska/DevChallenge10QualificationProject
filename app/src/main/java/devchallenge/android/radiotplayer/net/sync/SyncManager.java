@@ -71,7 +71,7 @@ public class SyncManager implements EventListener {
         mCurrentSyncTask.execute();
     }
 
-    //FIXME: get better solution
+    //FIXME: getInfoChannel better solution
     public void cancelCurrentPodcastsSync() {
         if (mCurrentSyncTask != null) {
             mCurrentSyncTask.cancel();

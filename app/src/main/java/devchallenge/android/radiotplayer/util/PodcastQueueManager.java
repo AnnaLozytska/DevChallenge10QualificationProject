@@ -9,7 +9,6 @@ import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PlayerUpdateEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
-import devchallenge.android.radiotplayer.repository.PersistentStorageManager;
 import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
 import rx.Observable;
 import rx.functions.Action1;
@@ -17,7 +16,7 @@ import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 
 import static devchallenge.android.radiotplayer.event.PodcastsSyncEvent.Status.FINISHED;
-import static devchallenge.android.radiotplayer.repository.PersistentStorageManager.DownloadStatus;
+import static devchallenge.android.radiotplayer.util.PersistentStorageManager.DownloadStatus;
 
 public class PodcastQueueManager {
     private static volatile PodcastQueueManager sInstance;
