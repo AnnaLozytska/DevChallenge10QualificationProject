@@ -53,8 +53,10 @@ public class PodcastInfoModel {
     }
 
     public Uri getImageUri() {
-        // if is cached, return local uri
-        return Uri.parse(podcastInfoRow.getImageUrl());
+        if (podcastInfoRow.getImageUrl() != null) {
+            return Uri.parse(podcastInfoRow.getImageUrl());
+        }
+        return null;
     }
 
     public long getFileSize() {

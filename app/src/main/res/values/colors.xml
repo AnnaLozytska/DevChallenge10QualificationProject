@@ -8,4 +8,6 @@
     <color name="colorPrimaryText">#212121</color>
     <color name="colorSecondaryText">#757575</color>
 
+    <color name="download">#BCBEBE</color>
+    <color name="downloaded">#8abd00</color>
 </resources>

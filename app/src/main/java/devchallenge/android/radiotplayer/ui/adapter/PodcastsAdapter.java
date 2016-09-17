@@ -7,6 +7,8 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -56,11 +58,13 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
     public void onBindViewHolder(PodcastViewHolder holder, int position) {
         PodcastInfoModel podcast = mPodcasts.get(position);
 
-        mPicasso.load(podcast.getImageUri())
-                .resizeDimen(R.dimen.item_image_size, R.dimen.item_image_size)
-                .centerCrop()
-                .placeholder(R.drawable.item_placeholder)
-                .into(holder.image);
+        if (podcast.getImageUri() != null) {
+            mPicasso.load(podcast.getImageUri())
+                    .resizeDimen(R.dimen.item_image_size, R.dimen.item_image_size)
+                    .centerCrop()
+                    .placeholder(R.drawable.item_placeholder)
+                    .into(holder.image);
+        }
 
         holder.title.setText(podcast.getTitle());
 
@@ -71,6 +75,11 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
             Spanned summary = Html.fromHtml(podcast.getSummary());
             holder.summary.setText(summary);
         }
+
+        Animation downloading = AnimationUtils.loadAnimation(mContext, R.anim.download_move);
+        downloading.setRepeatCount(Animation.INFINITE);
+        holder.download.setImageResource(R.drawable.ic_loading_grey_24dp);
+        holder.download.startAnimation(downloading);
     }
 
     public static class PodcastViewHolder extends RecyclerView.ViewHolder {
@@ -89,7 +98,7 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
             title = (TextView) itemView.findViewById(R.id.title);
             summary = (TextView) itemView.findViewById(R.id.summary);
             pubDate = (TextView) itemView.findViewById(R.id.pub_date);
-            playing = (ImageButton) itemView.findViewById(R.id.download);
+            download = (ImageButton) itemView.findViewById(R.id.download);
 
         }
     }
