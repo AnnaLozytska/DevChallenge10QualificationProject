@@ -4,15 +4,14 @@ import android.net.Uri;
 
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 
+import static devchallenge.android.radiotplayer.repository.PersistentStorageManager.DownloadStatus;
+
 
 public class PodcastInfoModel {
-    public static final int NOT_DOWNLOADED = 0;
-    public static final int DOWNLOADING = 1;
-    public static final int DOWNLOADED = 2;
-    public static final int FAILED = 3;
 
     private PodcastInfoRow podcastInfoRow;
-    private int downloaded;
+    private DownloadStatus downloadStatus;
+    private Uri audioUri;
     /**
      * Represents states of {@link devchallenge.android.radiotplayer.service.PlayerService}
      * if this item is currently being played, or 0 otherwise.
@@ -47,27 +46,31 @@ public class PodcastInfoModel {
     }
 
     public Uri getAudioUri() {
-        if (downloaded == DOWNLOADED) {
-            // return local uri
+        if (audioUri == null) {
+            audioUri = Uri.parse(podcastInfoRow.getAudioUrl());
         }
-        return Uri.parse(podcastInfoRow.getAudioUrl());
+        return audioUri;
     }
 
     public Uri getImageUri() {
         // if is cached, return local uri
-        return Uri.parse(podcastInfoRow.getAudioUrl());
+        return Uri.parse(podcastInfoRow.getImageUrl());
     }
 
     public long getFileSize() {
         return podcastInfoRow.getFileSize();
     }
 
-    public int getDownloaded() {
-        return downloaded;
+    public DownloadStatus getDownloadStatus() {
+        return downloadStatus;
     }
 
-    public void setDownloaded(int downloadState) {
-        downloaded = downloadState;
+    public void setDownloadStatus(DownloadStatus downloadState) {
+        this.downloadStatus = downloadState;
+    }
+
+    public void setLocalAudioUri(Uri localUri) {
+        audioUri = localUri;
     }
 
     public int getPlayingState() {
@@ -103,14 +106,14 @@ public class PodcastInfoModel {
                 + "title=" + getTitle()
                 + ", playingState=" + getPlayingState()
                 + ", currentPosition=" + getCurrentPosition()
-                + ", totalDuration" + getTotalDuration()
-                + ", getDownloaded=" + getDownloaded()
+                + ", totalDuration=" + getTotalDuration()
+                + ", downloadStatus=" + getDownloadStatus()
                 + ", pubTimestamp=" + getPublishedTimestamp()
-                + ", summary=" + getSummary()
-                + ", description" + getDescription().substring(0, 100) // description is too long to be displayed in logs
                 + ", audioUri=" + getAudioUri()
+                + ", fileSize=" + getFileSize()
                 + ", imageUri=" + getImageUri()
-                + ", fileSize=" + getFileSize();
+                + ", summary=" + getSummary()
+                + ", description=" + getDescription().substring(0, 100); // description is too long to be displayed in logs;
     }
 
     @Override
@@ -120,7 +123,7 @@ public class PodcastInfoModel {
         }
         PodcastInfoModel model = (PodcastInfoModel) obj;
         return podcastInfoRow.equals(model.podcastInfoRow)
-                && downloaded == model.getDownloaded()
+                && downloadStatus == model.getDownloadStatus()
                 && playingState == model.getPlayingState()
                 && currentPosition == model.getCurrentPosition()
                 && totalDuration == model.getTotalDuration();

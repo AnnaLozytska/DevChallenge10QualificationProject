@@ -9,11 +9,13 @@ import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PlayerUpdateEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
+import devchallenge.android.radiotplayer.repository.PersistentStorageManager;
 import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 import static devchallenge.android.radiotplayer.event.PodcastsSyncEvent.Status.FINISHED;
+import static devchallenge.android.radiotplayer.repository.PersistentStorageManager.*;
 
 public class PodcastQueueManager {
     private static volatile PodcastQueueManager sInstance;
@@ -29,17 +31,20 @@ public class PodcastQueueManager {
 
     private List<PodcastInfoModel> queue = Collections.emptyList();
     private PodcastInfoModel mCurrentPlaying;
+    private PodcastsInfoProvider mProvider;
+    private PersistentStorageManager mStorageManager;
     private EventManager mEventManager;
 
     private PodcastQueueManager() {
+        mProvider = PodcastsInfoProvider.getInstance();
+        mStorageManager = PersistentStorageManager.getInstance();
         mEventManager = EventManager.getInstance();
         mEventManager.registerEventListener(this);
         requestPodcastsList();
     }
 
     private void requestPodcastsList() {
-        PodcastsInfoProvider.getInstance()
-                .getPodcasts()
+        mProvider.getPodcasts()
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe(new Action1<List<PodcastInfoModel>>() {
@@ -47,16 +52,22 @@ public class PodcastQueueManager {
                     public void call(List<PodcastInfoModel> podcastInfos) {
                         queue = podcastInfos;
                         updateItemsDownloadStatus();
-                        updateCurrentlyPlayingInList(mCurrentPlaying);
+                        updateCurrentlyPlaying(mCurrentPlaying);
                     }
                 });
     }
 
     private void updateItemsDownloadStatus() {
-
+        for (PodcastInfoModel item : queue) {
+            DownloadStatus itemStatus = mStorageManager.getItemStatus(item);
+            item.setDownloadStatus(itemStatus);
+            if (itemStatus == DownloadStatus.DOWNLOADED) {
+                item.setLocalAudioUri(mStorageManager.getItemLocalUri(item));
+            }
+        }
     }
 
-    private void updateCurrentlyPlayingInList(PodcastInfoModel currentPlaying) {
+    private void updateCurrentlyPlaying(PodcastInfoModel currentPlaying) {
 
     }
 

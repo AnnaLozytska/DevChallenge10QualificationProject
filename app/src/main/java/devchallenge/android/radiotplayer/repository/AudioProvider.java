@@ -15,6 +15,5 @@ public class AudioProvider {
     private PersistentStorageManager mStorageManager;
 
     private AudioProvider() {
-        mStorageManager = new PersistentStorageManager();
     }
 }
