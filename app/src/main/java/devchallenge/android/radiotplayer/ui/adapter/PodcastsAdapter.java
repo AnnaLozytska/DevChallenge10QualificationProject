@@ -11,6 +11,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -23,9 +25,11 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
 
     private Context mContext;
     private List<PodcastInfoModel> mPodcasts;
+    private Picasso mPicasso;
 
     public PodcastsAdapter(Context context) {
         mContext = context;
+        mPicasso = Picasso.with(context);
         mPodcasts = Collections.emptyList();
     }
 
@@ -51,7 +55,12 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
     @Override
     public void onBindViewHolder(PodcastViewHolder holder, int position) {
         PodcastInfoModel podcast = mPodcasts.get(position);
-        //// TODO: 17.09.16 download image using picasso
+
+        mPicasso.load(podcast.getImageUri())
+                .resizeDimen(R.dimen.item_image_size, R.dimen.item_image_size)
+                .centerCrop()
+                .placeholder(R.drawable.item_placeholder)
+                .into(holder.image);
 
         holder.title.setText(podcast.getTitle());
 

@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -138,12 +137,13 @@ public class PersistentStorageManager {
      * Returns Uri of local podcast audio copy
      * @param itemTitle
      * @return
-     * @throws FileNotFoundException if podcast hasn't been save. So make sure to check it beforehand
-     *  by calling {@link #getItemStatus(String)}
      */
     public Uri getItemLocalUri(String itemTitle) {
         File file = new File(STORAGE_DIR, itemTitle + ".mp3" );
-        return Uri.fromFile(file);
+        if (file.exists()) {
+            return Uri.fromFile(file);
+        }
+        return null;
     }
 
     public enum DownloadStatus {
