@@ -18,8 +18,8 @@ import devchallenge.android.radiotplayer.net.model.PodcastInfoNet;
 import devchallenge.android.radiotplayer.net.sync.SyncManager;
 import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 import devchallenge.android.radiotplayer.util.Utils;
-import rx.Observable;
-import rx.Subscriber;
+import rx.Single;
+import rx.SingleSubscriber;
 
 public class PodcastsInfoProvider {
     private static volatile PodcastsInfoProvider sInstance;
@@ -44,16 +44,16 @@ public class PodcastsInfoProvider {
         mEventManager.registerEventListener(this);
     }
 
-    public Observable<List<PodcastInfoModel>> getPodcasts() {
-        return Observable.create(new Observable.OnSubscribe<List<PodcastInfoModel>>() {
+    public Single<List<PodcastInfoModel>> getPodcasts() {
+        return Single.create(new Single.OnSubscribe<List<PodcastInfoModel>>() {
             @Override
-            public void call(Subscriber<? super List<PodcastInfoModel>> subscriber) {
+            public void call(SingleSubscriber<? super List<PodcastInfoModel>> singleSubscriber) {
                 List<PodcastInfoModel> podcastInfoModels;
                 Query selectAll = Query.select();
                 SquidCursor<PodcastInfoRow> cursor = mDatabase.query(PodcastInfoRow.class, selectAll);
 
                 if (cursor.moveToFirst()) {
-                     podcastInfoModels = new ArrayList<>(cursor.getCount());
+                    podcastInfoModels = new ArrayList<>(cursor.getCount());
                     for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                         PodcastInfoRow row = new PodcastInfoRow();
                         row.readPropertiesFromCursor(cursor);
@@ -62,8 +62,7 @@ public class PodcastsInfoProvider {
                 } else {
                     podcastInfoModels = Collections.emptyList();
                 }
-                subscriber.onNext(podcastInfoModels);
-                subscriber.onCompleted();
+                singleSubscriber.onSuccess(podcastInfoModels);
             }
         });
     }
