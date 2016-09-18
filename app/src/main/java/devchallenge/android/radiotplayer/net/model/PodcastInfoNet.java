@@ -37,7 +37,7 @@ public class PodcastInfoNet {
 
     @Path("content")
     @Attribute(name = "fileSize")
-    private long fileSize;
+    private int fileSize;
 
     public String getTitle() {
         return title;
@@ -74,7 +74,7 @@ public class PodcastInfoNet {
         return length;
     }
 
-    public long getFileSize() {
+    public int getFileSize() {
         return fileSize;
     }
 }

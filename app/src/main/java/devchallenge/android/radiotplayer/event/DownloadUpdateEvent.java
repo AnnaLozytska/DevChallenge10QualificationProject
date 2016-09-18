@@ -41,6 +41,7 @@ public class DownloadUpdateEvent extends Event {
     public String toString() {
         return getClass().getSimpleName() + ":"
                 + " loading " + loadingItemTitle
+                + ", status=" + status.name()
                 + ", downloaded=" + downloaded
                 + ", totalSize=" + totalSize;
     }

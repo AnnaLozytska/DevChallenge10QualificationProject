@@ -1,6 +1,8 @@
 package devchallenge.android.radiotplayer.ui.adapter;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.Spanned;
@@ -20,8 +22,14 @@ import java.util.Date;
 import java.util.List;
 
 import devchallenge.android.radiotplayer.R;
+import devchallenge.android.radiotplayer.event.DownloadCommandEvent;
+import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 import devchallenge.android.radiotplayer.util.Utils;
+
+import static devchallenge.android.radiotplayer.event.DownloadCommandEvent.Command.CANCEL;
+import static devchallenge.android.radiotplayer.event.DownloadCommandEvent.Command.DELETE;
+import static devchallenge.android.radiotplayer.event.DownloadCommandEvent.Command.DOWNLOAD;
 
 public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.PodcastViewHolder> {
 
@@ -56,7 +64,7 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
 
     @Override
     public void onBindViewHolder(PodcastViewHolder holder, int position) {
-        PodcastInfoModel podcast = mPodcasts.get(position);
+        final PodcastInfoModel podcast = mPodcasts.get(position);
 
         if (podcast.getImageUri() != null) {
             mPicasso.load(podcast.getImageUri())
@@ -76,10 +84,61 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
             holder.summary.setText(summary);
         }
 
-        Animation downloading = AnimationUtils.loadAnimation(mContext, R.anim.download_move);
-        downloading.setRepeatCount(Animation.INFINITE);
-        holder.download.setImageResource(R.drawable.ic_loading_grey_24dp);
-        holder.download.startAnimation(downloading);
+        switch (podcast.getDownloadStatus()) {
+            case DELETED:
+            case FAILED:
+            case NOT_DOWNLOADED:
+                    holder.download.setImageResource(R.drawable.ic_download);
+                holder.download.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EventManager.getInstance().postEvent(
+                                new DownloadCommandEvent(podcast.getTitle(), DOWNLOAD)
+                        );
+                    }
+                });
+                break;
+            case DOWNLOADING:
+                Animation downloading = AnimationUtils.loadAnimation(mContext, R.anim.download_move);
+                downloading.setRepeatCount(Animation.INFINITE);
+                holder.download.setImageResource(R.drawable.ic_loading);
+                holder.download.startAnimation(downloading);
+                holder.download.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EventManager.getInstance().postEvent(
+                                new DownloadCommandEvent(podcast.getTitle(), CANCEL));
+                    }
+                });
+                break;
+            case DOWNLOADED:
+                holder.download.setImageResource(R.drawable.ic_downloaded);
+                holder.download.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new AlertDialog.Builder(mContext)
+                                .setTitle(mContext.getString(
+                                        R.string.dialog_downloaded_title, podcast.getTitle()))
+                                .setMessage(mContext.getString(R.string.dialog_downloaded_message, podcast.getTitle()))
+                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setNegativeButton(R.string.delete, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        EventManager.getInstance().postEvent(
+                                                new DownloadCommandEvent(podcast.getTitle(), DELETE));
+                                    }
+                                })
+                                .show();
+
+                    }
+                });
+
+        }
     }
 
     public static class PodcastViewHolder extends RecyclerView.ViewHolder {

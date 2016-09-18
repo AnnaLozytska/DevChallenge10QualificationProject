@@ -19,7 +19,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-        PodcastsInfoProvider.getInstance();
+        PodcastsInfoProvider.getInstance().startManualSync();
         int syncInterval = SettingsManager.getInstance().getPodcastsSyncInterval();
         SyncManager.getInstance().schedulePodcastsSync(syncInterval);
 

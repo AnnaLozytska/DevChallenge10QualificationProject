@@ -5,7 +5,9 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/item_bottom_padding"
+        android:paddingTop="@dimen/item_top_padding">
 
         <ImageView
             android:id="@+id/image"
@@ -31,7 +33,6 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="@dimen/item_right_margin"
-            android:layout_marginTop="@dimen/item_top_margin"
             android:textColor="@color/colorSecondaryText" />
 
         <ImageButton
@@ -41,7 +42,6 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/pub_date"
-            android:layout_marginBottom="@dimen/item_bottom_margin"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="@dimen/item_right_margin"
             android:background="@android:color/transparent" />
@@ -51,7 +51,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:layout_marginTop="@dimen/item_top_margin"
             android:layout_toLeftOf="@+id/pub_date"
             android:layout_toRightOf="@+id/image"
             android:textColor="@color/colorPrimaryText"
@@ -62,7 +61,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/title"
-            android:layout_marginBottom="@dimen/item_bottom_margin"
             android:layout_toLeftOf="@+id/download"
             android:layout_toRightOf="@+id/image" />
 

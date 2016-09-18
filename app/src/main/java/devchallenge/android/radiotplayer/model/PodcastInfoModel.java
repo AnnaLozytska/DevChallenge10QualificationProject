@@ -59,8 +59,8 @@ public class PodcastInfoModel {
         return null;
     }
 
-    public long getFileSize() {
-        return podcastInfoRow.getFileSize();
+    public int getFileSize() {
+        return (int) podcastInfoRow.getFileSize();
     }
 
     public DownloadStatus getDownloadStatus() {

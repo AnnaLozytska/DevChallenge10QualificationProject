@@ -5,6 +5,7 @@ import com.squareup.otto.Subscribe;
 import java.util.Collections;
 import java.util.List;
 
+import devchallenge.android.radiotplayer.event.DownloadUpdateEvent;
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PlayerUpdateEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
@@ -52,16 +53,13 @@ public class PodcastQueueManager {
         return mQueueUpdates;
     }
 
-    @Subscribe
-    public void onPlayerUpdateEvent(PlayerUpdateEvent update) {
-
-    }
-
-    @Subscribe
-    public void onSyncFinishedEvent(PodcastsSyncEvent sync) {
-        if (sync.getStatus() == FINISHED && sync.haveUpdates()) {
-            requestPodcastsList();
+    public PodcastInfoModel getItem(String title) {
+        for (PodcastInfoModel item : queue) {
+            if (item.getTitle().equals(title)) {
+                return item;
+            }
         }
+        return null;
     }
 
     public PodcastInfoModel getNextItem(PodcastInfoModel item) {
@@ -79,6 +77,28 @@ public class PodcastQueueManager {
 
     public boolean hasPresious(PodcastInfoModel item) {
         throw new UnsupportedOperationException("TBD");
+    }
+
+    @Subscribe
+    public void onPlayerUpdateEvent(PlayerUpdateEvent update) {
+
+    }
+
+    @Subscribe
+    public void onDownloadUpdateEvent(DownloadUpdateEvent download) {
+        for (PodcastInfoModel item : queue) {
+            if (item.getTitle().equals(download.getLoadingItemTitle())) {
+                item.setDownloadStatus(download.getStatus());
+                mQueueUpdates.onNext(queue);
+            }
+        }
+    }
+
+    @Subscribe
+    public void onSyncFinishedEvent(PodcastsSyncEvent sync) {
+        if (sync.getStatus() == FINISHED && sync.haveUpdates()) {
+            requestPodcastsList();
+        }
     }
 
     private void requestPodcastsList() {

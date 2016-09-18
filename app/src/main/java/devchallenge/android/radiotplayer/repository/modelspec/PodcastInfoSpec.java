@@ -28,6 +28,6 @@ class PodcastInfoSpec {
     int length;
 
     @ColumnSpec(defaultValue="0")
-    long fileSize;
+    int fileSize;
 
 }
