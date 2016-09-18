@@ -60,14 +60,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected void onStart() {
         super.onStart();
         EventManager.getInstance().registerEventListener(this);
-        PlayerService.bind(this, mPlayerConnection);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         EventManager.getInstance().unregisterEventListener(this);
-        unbindService(mPlayerConnection);
     }
 
     @Subscribe

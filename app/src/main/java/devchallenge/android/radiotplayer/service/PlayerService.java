@@ -15,6 +15,7 @@ import android.os.PowerManager;
 import java.io.IOException;
 
 import devchallenge.android.radiotplayer.event.EventManager;
+import devchallenge.android.radiotplayer.event.PlayerUpdateEvent;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 import devchallenge.android.radiotplayer.util.PodcastQueueManager;
 
@@ -66,37 +67,47 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
         return mBinder;
     }
 
+    public PodcastInfoModel getCurrentPodcast() {
+        return mCurrentPodcast;
+    }
+
     public void play() {
-        if (mCurrentPodcast != null) {
-            switch (mState) {
-                case PLAYING:
-                    mMediaPlayer.seekTo(0);
-                    break;
-                case PAUSED:
-                case COMPLETED:
-                    mMediaPlayer.start();
-                    break;
-                case BUFFERING:
-                    // do nothing - audio is already loading and will start automatically
-                    break;
-                default:
-                    //TODO
-            }
+        if (mCurrentPodcast == null) {
+            mCurrentPodcast = mQueueManager.getFirstItem();
+        }
+        switch (mCurrentPodcast.getPlayingState()) {
+            case PLAYING:
+                break;
+            case PAUSED:
+            case COMPLETED:
+                mMediaPlayer.start();
+                break;
+            case BUFFERING:
+                // do nothing - audio is already loading and will start automatically
+                break;
+            default:
+                relaxResources(true);
+                requestAudioFocusIfNeeded();
+                createMediaPlayerIfNeeded();
+                updateStateAndNotify(BUFFERING);
+                try {
+                    mMediaPlayer.setDataSource(getApplicationContext(), mCurrentPodcast.getAudioUri());
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mMediaPlayer.prepareAsync();
+                    mWifiLock.acquire();
+                } catch (IOException ex) {
+                    //TODO handle better
+                    updateStateAndNotify(ERROR);
+                }
+        }
+    }
+
+    public void play(PodcastInfoModel podcast) {
+        if (mCurrentPodcast != null && mCurrentPodcast.getTitle().equals(podcast.getTitle())) {
+            play();
         } else {
-            mCurrentPodcast = mQueueManager.getNextItem(mCurrentPodcast);
-            relaxResources(false); // release everything except MediaPlayer
-            requestAudioFocusIfNeeded();
-            createMediaPlayerIfNeeded();
-            updateStateAndNotify(BUFFERING);
-            try {
-                mMediaPlayer.setDataSource(getApplicationContext(), mCurrentPodcast.getAudioUri());
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mMediaPlayer.prepareAsync();
-                mWifiLock.acquire();
-            } catch (IOException ex) {
-                //TODO handle better
-                updateStateAndNotify(ERROR);
-            }
+            mCurrentPodcast = podcast;
+            play();
         }
     }
 
@@ -116,6 +127,24 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
         relaxResources(true);
         if (mWifiLock.isHeld()) {
             mWifiLock.release();
+        }
+    }
+
+    public void next() {
+        PodcastInfoModel next;
+        if (mCurrentPodcast == null) {
+            next = mQueueManager.getNextItem(mQueueManager.getFirstItem().toString());
+        } else {
+            next = mQueueManager.getNextItem(mCurrentPodcast.getTitle());
+        }
+        play(next);
+    }
+
+    public void previous() {
+        PodcastInfoModel previous;
+        if (mCurrentPodcast != null && mQueueManager.hasPrevious(mCurrentPodcast.getTitle())) {
+            previous = mQueueManager.getNextItem(mQueueManager.getFirstItem().toString());
+            play(previous);
         }
     }
 
@@ -148,7 +177,6 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
     }
 
     private void relaxResources(boolean releaseMediaPlayer) {
-        stopForeground(true);
         if (releaseMediaPlayer && mMediaPlayer != null) {
             mMediaPlayer.reset();
             mMediaPlayer.release();
@@ -160,8 +188,8 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
     }
 
     private void updateStateAndNotify(int newState) {
-        mState = newState;
-        //TODO send update event
+        mCurrentPodcast.setPlayingState(newState);
+        mEventmanager.postEvent(new PlayerUpdateEvent(mCurrentPodcast));
     }
 
     private void requestAudioFocusIfNeeded() {

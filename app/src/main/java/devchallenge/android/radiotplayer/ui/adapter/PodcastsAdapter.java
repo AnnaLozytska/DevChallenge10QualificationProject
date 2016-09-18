@@ -25,6 +25,7 @@ import devchallenge.android.radiotplayer.R;
 import devchallenge.android.radiotplayer.event.DownloadCommandEvent;
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
+import devchallenge.android.radiotplayer.service.PlayerService;
 import devchallenge.android.radiotplayer.util.Utils;
 
 import static devchallenge.android.radiotplayer.event.DownloadCommandEvent.Command.CANCEL;
@@ -36,11 +37,16 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
     private Context mContext;
     private List<PodcastInfoModel> mPodcasts;
     private Picasso mPicasso;
+    private PlayerService mPlayer;
 
     public PodcastsAdapter(Context context) {
         mContext = context;
         mPicasso = Picasso.with(context);
         mPodcasts = Collections.emptyList();
+    }
+
+    public void setPlayer(PlayerService mPlayer) {
+        this.mPlayer = mPlayer;
     }
 
     public void swapItems(List<PodcastInfoModel> newItems) {
@@ -72,6 +78,42 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
                     .centerCrop()
                     .placeholder(R.drawable.item_placeholder)
                     .into(holder.image);
+        }
+        holder.image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPlayer != null) {
+                    mPlayer.play(podcast);
+                }
+            }
+        });
+
+        if (podcast.getPlayingState() == PlayerService.PLAYING
+                || podcast.getPlayingState() == PlayerService.BUFFERING) {
+            holder.playing.setVisibility(View.VISIBLE);
+            holder.playing.setImageResource(R.drawable.ic_play);
+            holder.playing.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mPlayer != null) {
+                        mPlayer.pause();
+                    }
+                }
+            });
+        } else if (podcast.getPlayingState() == PlayerService.PAUSED) {
+            holder.playing.setVisibility(View.VISIBLE);
+            holder.playing.setImageResource(R.drawable.ic_pause);
+            holder.playing.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mPlayer != null) {
+                        mPlayer.play();
+                    }
+                }
+            });
+
+        } else {
+            holder.playing.setVisibility(View.GONE);
         }
 
         holder.title.setText(podcast.getTitle());
@@ -159,6 +201,7 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
     public static class PodcastViewHolder extends RecyclerView.ViewHolder {
 
         ImageView image;
+        ImageView pause;
         ImageView playing;
         TextView title;
         TextView summary;
@@ -168,6 +211,7 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
         public PodcastViewHolder(View itemView) {
             super(itemView);
             image = (ImageView) itemView.findViewById(R.id.image);
+            pause = (ImageView) itemView.findViewById(R.id.playing);
             playing = (ImageView) itemView.findViewById(R.id.playing);
             title = (TextView) itemView.findViewById(R.id.title);
             summary = (TextView) itemView.findViewById(R.id.summary);

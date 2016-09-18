@@ -2,7 +2,6 @@ package devchallenge.android.radiotplayer.ui.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,7 +19,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class PodcastsFragment extends Fragment {
+public class PodcastsFragment extends PlayerBoundFragment {
 
     RecyclerView mPodcastsList;
     PodcastsAdapter mAdapter;
@@ -60,5 +59,15 @@ public class PodcastsFragment extends Fragment {
         if (!mQueueUpdates.isUnsubscribed()) {
             mQueueUpdates.unsubscribe();
         }
+    }
+
+    @Override
+    protected void onPlayerBound() {
+        mAdapter.setPlayer(mPlayer);
+    }
+
+    @Override
+    protected void onPlayerUnbound() {
+        mAdapter.setPlayer(null);
     }
 }

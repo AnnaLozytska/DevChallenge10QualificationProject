@@ -10,6 +10,10 @@ public class PlayerUpdateEvent extends Event {
         this.playingPodcast = playingPodcast;
     }
 
+    public PodcastInfoModel getPlayingPodcast() {
+        return playingPodcast;
+    }
+
     @Override
     public String toString() {
         return getClass().toString() + ": " + playingPodcast.toString();

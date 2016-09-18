@@ -13,6 +13,7 @@ import devchallenge.android.radiotplayer.event.PlayerUpdateEvent;
 import devchallenge.android.radiotplayer.event.PodcastsSyncEvent;
 import devchallenge.android.radiotplayer.model.PodcastInfoModel;
 import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
+import devchallenge.android.radiotplayer.service.PlayerService;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -64,26 +65,66 @@ public class PodcastQueueManager {
         return null;
     }
 
-    public PodcastInfoModel getNextItem(PodcastInfoModel item) {
-        //TODO handle empty list
-        throw new UnsupportedOperationException("TBD");
+    public boolean hasPodcasts() {
+        return !Utils.isEmpty(queue);
     }
 
-    public PodcastInfoModel getPreviousItem(PodcastInfoModel item) {
-        throw new UnsupportedOperationException("TBD");
+    public PodcastInfoModel getFirstItem() {
+        if (!Utils.isEmpty(queue)) {
+            return queue.get(0);
+        } else {
+            throw new IllegalStateException("Podcasts queue is empty");
+        }
     }
 
-    public boolean hasNext(PodcastInfoModel item) {
-        throw new UnsupportedOperationException("TBD");
+    public PodcastInfoModel getNextItem(String itemTitle) {
+        int itemIndex = queue.indexOf(getItem(itemTitle));
+        if (itemIndex < queue.size() - 1) {
+            return queue.get(itemIndex + 1);
+        } else {
+            throw new IllegalStateException(itemTitle + " doesn't have next");
+        }
     }
 
-    public boolean hasPresious(PodcastInfoModel item) {
-        throw new UnsupportedOperationException("TBD");
+    public PodcastInfoModel getPreviousItem(String itemTitle) {
+        int itemIndex = queue.indexOf(getItem(itemTitle));
+        if (itemIndex > 0) {
+            return queue.get(itemIndex - 1);
+        } else {
+            throw new IllegalStateException(itemTitle + " doesn't have previous");
+        }
+    }
+
+    public boolean hasNext(String itemTitle) {
+        return queue.indexOf(getItem(itemTitle)) < queue.size() - 1;
+    }
+
+    public boolean hasPrevious(String itemTitle) {
+        return queue.indexOf(getItem(itemTitle)) > 0;
     }
 
     @Subscribe
     public void onPlayerUpdateEvent(PlayerUpdateEvent update) {
-
+        PodcastInfoModel updated = update.getPlayingPodcast();
+        // if it is the same item
+        if (mCurrentPlaying != null && updated.getTitle().equals(mCurrentPlaying.getTitle())) {
+            if (mCurrentPlaying.getPlayingState() == updated.getPlayingState()) {
+                // do nothing - its current position update
+            } else {
+                mCurrentPlaying.setPlayingState(updated.getPlayingState());
+                mQueueUpdates.onNext(queue);
+            }
+        } else {
+            if (mCurrentPlaying != null) {
+                mCurrentPlaying.setPlayingState(PlayerService.STOPPED);
+                mCurrentPlaying.setCurrentPosition(0);
+            }
+            mCurrentPlaying = getItem(updated.getTitle());
+            mCurrentPlaying.setPlayingState(updated.getPlayingState());
+            mCurrentPlaying.setCurrentPosition(updated.getCurrentPosition());
+            mCurrentPlaying.setTotalDuration(updated.getTotalDuration());
+            mQueueUpdates.onNext(queue);
+        }
     }
 
     @Subscribe
