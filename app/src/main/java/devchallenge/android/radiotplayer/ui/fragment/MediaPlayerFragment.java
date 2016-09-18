@@ -67,8 +67,8 @@ public class MediaPlayerFragment extends PlayerBoundFragment {
     public void omPlayeUpdateEvent(PlayerUpdateEvent updateEvent) {
         PodcastInfoModel updated = updateEvent.getPlayingPodcast();
         if (mCurrentPodcast != null
-                && (!updated.getTitle().equals(mCurrentPodcast.getTitle())
-                || !(updated.getPlayingState() == mCurrentPodcast.getPlayingState()))) {
+                && (updated.getTitle().equals(mCurrentPodcast.getTitle())
+                || (updated.getPlayingState() == mCurrentPodcast.getPlayingState()))) {
             return;
         }
         configureViews(updated);

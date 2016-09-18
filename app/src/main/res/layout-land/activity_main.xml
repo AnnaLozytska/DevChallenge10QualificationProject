@@ -12,12 +12,12 @@
         android:id="@+id/player"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"/>
+        android:layout_weight="2"/>
 
     <fragment
         android:name="devchallenge.android.radiotplayer.ui.fragment.PodcastsFragment"
         android:id="@+id/podcasts_list"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"/>
+        android:layout_weight="5"/>
 </LinearLayout>

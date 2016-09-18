@@ -81,6 +81,7 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
             case PAUSED:
             case COMPLETED:
                 mMediaPlayer.start();
+                updateStateAndNotify(PLAYING);
                 break;
             case BUFFERING:
                 // do nothing - audio is already loading and will start automatically
@@ -143,19 +144,20 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
     public void previous() {
         PodcastInfoModel previous;
         if (mCurrentPodcast != null && mQueueManager.hasPrevious(mCurrentPodcast.getTitle())) {
-            previous = mQueueManager.getNextItem(mQueueManager.getFirstItem().toString());
+            previous = mQueueManager.getPreviousItem(mCurrentPodcast.toString());
             play(previous);
         }
     }
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
+        updateStateAndNotify(PLAYING);
         mMediaPlayer.start();
     }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-
+        next();
     }
 
     @Override
