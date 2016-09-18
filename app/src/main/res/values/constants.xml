@@ -3,6 +3,5 @@
     <string name="pref_key_podcasts_sync_interval" translatable="false">podcasts_sync_interval</string>
     <string name="pref_key_last_sync_timestamp" translatable="false">last_sync_timestamp</string>
     <string name="pref_key_last_sync_status" translatable="false">last_sync_status</string>
-    <string name="pref_key_last_sync_have_updates" translatable="false">last_sync_have_updates</string>
     <string name="pref_key_last_sync_error" translatable="false">last_sync_error</string>
 </resources>

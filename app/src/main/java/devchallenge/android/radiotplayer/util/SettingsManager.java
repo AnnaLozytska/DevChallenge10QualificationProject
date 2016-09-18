@@ -70,7 +70,6 @@ public class SettingsManager {
                 .getString(getKey(R.string.pref_key_last_sync_status), PodcastsSyncEvent.Status.UNKNOWN.name()));
         PodcastsSyncEvent lastSyncEvent = new PodcastsSyncEvent(lastStatus);
         lastSyncEvent.setEventTimestamp(getPreferences().getLong(getKey(R.string.pref_key_last_sync_timestamp), 0L));
-        lastSyncEvent.setHaveUpdates(getPreferences().getBoolean(getKey(R.string.pref_key_last_sync_have_updates), false));
         lastSyncEvent.setError(getPreferences().getString(getKey(R.string.pref_key_last_sync_error), null));
         lastSyncEvent.setPersisted(true);
         return lastSyncEvent;
@@ -82,7 +81,6 @@ public class SettingsManager {
             getPreferences().edit()
                     .putLong(getKey(R.string.pref_key_last_sync_timestamp), event.getEventTimestamp())
                     .putString(getKey(R.string.pref_key_last_sync_status), event.getStatus().name())
-                    .putBoolean(getKey(R.string.pref_key_last_sync_have_updates), event.haveUpdates())
                     .putString(getKey(R.string.pref_key_last_sync_error), event.getError())
                     .apply();
         }

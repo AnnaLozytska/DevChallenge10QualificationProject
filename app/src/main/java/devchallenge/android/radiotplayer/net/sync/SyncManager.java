@@ -11,6 +11,7 @@ import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
 
 import java.util.EventListener;
+import java.util.concurrent.Future;
 
 import devchallenge.android.radiotplayer.App;
 import devchallenge.android.radiotplayer.event.EventManager;
@@ -33,7 +34,7 @@ public class SyncManager implements EventListener {
     }
 
     private final FirebaseJobDispatcher mDispatcher;
-    private PodcastsDownloadTaskAsync mCurrentSyncTask;
+    private Future mCurrentSyncTask;
     private EventManager mEventManager;
 
     private SyncManager() {
@@ -59,7 +60,7 @@ public class SyncManager implements EventListener {
         int result = mDispatcher.schedule(job);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
             PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FAILED);
-            syncEvent.setError("FirebaseJobDispatcher error code " + result);
+            syncEvent.setError("Failed to schedule sync. FirebaseJobDispatcher error code " + result);
             mEventManager.postEvent(syncEvent);
         }
     }
@@ -67,14 +68,13 @@ public class SyncManager implements EventListener {
     public void syncPodcastsManualy() {
         Log.d(TAG, "Starting poscasts sync...");
         cancelCurrentPodcastsSync();
-        mCurrentSyncTask = new PodcastsDownloadTaskAsync();
-        mCurrentSyncTask.execute();
+        mCurrentSyncTask = new PodcastsDownloadTaskAsync().execute();
     }
 
     //FIXME: getInfoChannel better solution
     public void cancelCurrentPodcastsSync() {
-        if (mCurrentSyncTask != null) {
-            mCurrentSyncTask.cancel();
+        if (mCurrentSyncTask != null && !mCurrentSyncTask.isDone()) {
+            mCurrentSyncTask.cancel(true);
         }
     }
 }

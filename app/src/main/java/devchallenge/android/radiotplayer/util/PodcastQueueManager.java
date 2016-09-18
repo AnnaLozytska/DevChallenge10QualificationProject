@@ -1,5 +1,7 @@
 package devchallenge.android.radiotplayer.util;
 
+import android.util.Log;
+
 import com.squareup.otto.Subscribe;
 
 import java.util.Collections;
@@ -96,12 +98,15 @@ public class PodcastQueueManager {
 
     @Subscribe
     public void onSyncFinishedEvent(PodcastsSyncEvent sync) {
-        if (sync.getStatus() == FINISHED && sync.haveUpdates()) {
+        if (sync.getStatus() == FINISHED) {
             requestPodcastsList();
         }
     }
 
     private void requestPodcastsList() {
+        //TODO: DELETE AFTER TESTING:
+        Log.d("---Test---", "Requesting podcasts");
+
         mProvider.getPodcasts()
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
@@ -109,6 +114,7 @@ public class PodcastQueueManager {
                     @Override
                     public void call(List<PodcastInfoModel> podcastInfos) {
                         queue = podcastInfos;
+                        Collections.sort(queue);
                         updateItemsDownloadStatus();
                         updateCurrentlyPlaying(mCurrentPlaying);
                         mQueueUpdates.onNext(queue);

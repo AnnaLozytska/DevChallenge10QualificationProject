@@ -4,7 +4,6 @@ public class PodcastsSyncEvent extends Event {
 
     private long eventTimestamp;
     private Status status;
-    private boolean haveUpdates;
     private String error;
     /**
      * Indicates if this event represents real updates from sync process
@@ -33,14 +32,6 @@ public class PodcastsSyncEvent extends Event {
         this.status = status;
     }
 
-    public boolean haveUpdates() {
-        return haveUpdates;
-    }
-
-    public void setHaveUpdates(boolean haveUpdates) {
-        this.haveUpdates = haveUpdates;
-    }
-
     public String getError() {
         return error;
     }
@@ -60,7 +51,6 @@ public class PodcastsSyncEvent extends Event {
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": status=" + status.name()
-                + ", haveUpdates=" + haveUpdates
                 + ", error=" + error
                 + ", isPersisted=" + isPersisted;
     }

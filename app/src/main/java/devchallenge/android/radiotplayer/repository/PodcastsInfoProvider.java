@@ -80,15 +80,12 @@ public class PodcastsInfoProvider {
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                boolean haveUpdates = false;
-
                 for (PodcastInfoNet netModel : event.getPodcasts()) {
                     PodcastInfoRow syncPodcast = rowFromNetModel(netModel);
 
                     Query selectByTitle = Query.select().where(PodcastInfoRow.TITLE.eq(syncPodcast.getTitle()));
                     SquidCursor<PodcastInfoRow> cursor = mDatabase.query(PodcastInfoRow.class, selectByTitle);
 
-                    boolean updatedDb = false;
                     if (cursor.moveToFirst()) {
                         PodcastInfoRow podcastInDb = new PodcastInfoRow();
                         podcastInDb.readPropertiesFromCursor(cursor);
@@ -96,19 +93,14 @@ public class PodcastsInfoProvider {
                         syncPodcast.setId(podcastInDb.getId());
 
                         if (!syncPodcast.equals(podcastInDb)) {
-                            updatedDb = mDatabase.persist(syncPodcast);
-                            //TODO handle case when for some reason database didn't persist data
+                            mDatabase.persist(syncPodcast);
                         }
                     } else {
-                        updatedDb = mDatabase.persist(syncPodcast);
-                    }
-                    if (updatedDb && !haveUpdates) {
-                        haveUpdates = true;
+                        mDatabase.persist(syncPodcast);
                     }
                 }
 
                 PodcastsSyncEvent syncEvent = new PodcastsSyncEvent(PodcastsSyncEvent.Status.FINISHED);
-                syncEvent.setHaveUpdates(haveUpdates);
                 mEventManager.postEvent(syncEvent);
             }
         });

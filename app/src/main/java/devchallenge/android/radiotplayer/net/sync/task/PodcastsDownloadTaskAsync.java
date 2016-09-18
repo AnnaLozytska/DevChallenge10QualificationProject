@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.InterruptedIOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import devchallenge.android.radiotplayer.event.EventManager;
 import devchallenge.android.radiotplayer.event.PodcastsLoadedEvent;
@@ -21,8 +22,8 @@ public class PodcastsDownloadTaskAsync {
     // caused by InterruptedIOException should be handled as real error or intended execution cancellation
     private boolean isPlannedTermination;
 
-    public void execute() {
-        mExecutor.execute(new Runnable() {
+    public Future execute() {
+        return mExecutor.submit(new Runnable() {
             @Override
             public void run() {
                 EventManager eventManager = EventManager.getInstance();

@@ -4,6 +4,7 @@ import android.app.Application;
 
 import devchallenge.android.radiotplayer.net.sync.SyncManager;
 import devchallenge.android.radiotplayer.repository.PodcastsInfoProvider;
+import devchallenge.android.radiotplayer.util.PodcastQueueManager;
 import devchallenge.android.radiotplayer.util.SettingsManager;
 
 public class App extends Application {
@@ -19,9 +20,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-        PodcastsInfoProvider.getInstance().startManualSync();
         int syncInterval = SettingsManager.getInstance().getPodcastsSyncInterval();
         SyncManager.getInstance().schedulePodcastsSync(syncInterval);
+        PodcastQueueManager.getInstance();
+        PodcastsInfoProvider.getInstance().startManualSync();
 
     }
 }

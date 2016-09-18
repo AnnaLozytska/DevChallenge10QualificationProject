@@ -104,10 +104,25 @@ public class PodcastsAdapter extends RecyclerView.Adapter<PodcastsAdapter.Podcas
                 holder.download.setImageResource(R.drawable.ic_loading);
                 holder.download.startAnimation(downloading);
                 holder.download.setOnClickListener(new View.OnClickListener() {
+
                     @Override
                     public void onClick(View v) {
-                        EventManager.getInstance().postEvent(
-                                new DownloadCommandEvent(podcast.getTitle(), CANCEL));
+                        new AlertDialog.Builder(mContext)
+                                .setMessage(mContext.getString(R.string.dialog_cancel_download_message, podcast.getTitle()))
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        EventManager.getInstance().postEvent(
+                                                new DownloadCommandEvent(podcast.getTitle(), CANCEL));
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .show();
                     }
                 });
                 break;

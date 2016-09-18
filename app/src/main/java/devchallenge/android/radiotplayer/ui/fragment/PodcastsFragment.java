@@ -45,6 +45,7 @@ public class PodcastsFragment extends Fragment {
                 .getPodcastQueueUpdates()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .onBackpressureLatest()
                 .subscribe(new Action1<List<PodcastInfoModel>>() {
                     @Override
                     public void call(List<PodcastInfoModel> podcasts) {

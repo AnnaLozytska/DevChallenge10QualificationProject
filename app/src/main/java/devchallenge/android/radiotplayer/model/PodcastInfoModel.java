@@ -7,7 +7,7 @@ import devchallenge.android.radiotplayer.repository.modelspec.PodcastInfoRow;
 import static devchallenge.android.radiotplayer.util.PersistentStorageManager.DownloadStatus;
 
 
-public class PodcastInfoModel {
+public class PodcastInfoModel implements Comparable<PodcastInfoModel>{
 
     private PodcastInfoRow podcastInfoRow;
     private DownloadStatus downloadStatus;
@@ -129,5 +129,11 @@ public class PodcastInfoModel {
                 && playingState == model.getPlayingState()
                 && currentPosition == model.getCurrentPosition()
                 && totalDuration == model.getTotalDuration();
+    }
+
+
+    @Override
+    public int compareTo(PodcastInfoModel o) {
+        return (int) (o.getPublishedTimestamp() - this.getPublishedTimestamp());
     }
 }

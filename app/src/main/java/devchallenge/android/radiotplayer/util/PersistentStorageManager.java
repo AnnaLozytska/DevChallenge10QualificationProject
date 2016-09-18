@@ -27,7 +27,9 @@ import devchallenge.android.radiotplayer.event.EventManager;
 public class PersistentStorageManager {
     private static volatile PersistentStorageManager sInstance;
     private static int MAX_SIMULTANIOUS_DOWNLOADS = 5;
-    private static String STORAGE_DIR = Environment.getExternalStorageDirectory() + "/radiot/audio";
+    private static final String STORAGE_DIR = "/radiot/audio";
+    private static final String STORAGE_FULL_PATH =
+            Environment.getExternalStorageDirectory().getAbsolutePath() + STORAGE_DIR;
 
     public static PersistentStorageManager getInstance() {
         synchronized (PersistentStorageManager.class) {
@@ -44,7 +46,7 @@ public class PersistentStorageManager {
 
     private PersistentStorageManager() {
         downloadingItems = new HashMap<>();
-        mExecutor = new ThreadPoolExecutor(0, MAX_SIMULTANIOUS_DOWNLOADS,
+        mExecutor = new ThreadPoolExecutor(MAX_SIMULTANIOUS_DOWNLOADS, MAX_SIMULTANIOUS_DOWNLOADS,
                 1, TimeUnit.MINUTES,
                 new LinkedBlockingQueue<Runnable>());
         mEventManager = EventManager.getInstance();
@@ -58,7 +60,7 @@ public class PersistentStorageManager {
             return DownloadStatus.DOWNLOADING;
         }
 
-        File file = new File(STORAGE_DIR, itemTitle + ".mp3");
+        File file = new File(STORAGE_FULL_PATH, removeSpaces(itemTitle) + ".mp3");
         if (file.exists()) {
             // check if file is completely downloaded
             int itemFileSize = PodcastQueueManager.getInstance().getItem(itemTitle).getFileSize();
@@ -81,7 +83,7 @@ public class PersistentStorageManager {
      * @return
      */
     public Uri getItemLocalUri(String itemTitle) {
-        File file = new File(STORAGE_DIR, itemTitle + ".mp3");
+        File file = new File(STORAGE_FULL_PATH, removeSpaces(itemTitle) + ".mp3");
         if (file.exists()) {
             return Uri.fromFile(file);
         }
@@ -132,7 +134,6 @@ public class PersistentStorageManager {
                     URL audioUrl = new URL(downloadUrl);
                     urlConnection = (HttpURLConnection) audioUrl.openConnection();
                     urlConnection.setRequestMethod("GET");
-
                     BufferedInputStream bis = new BufferedInputStream(urlConnection.getInputStream());
                     int totalSize = urlConnection.getContentLength();
                     int current = 0;
@@ -141,10 +142,15 @@ public class PersistentStorageManager {
                             new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADING,
                                     current, totalSize));
 
-                    audioFile = new File(STORAGE_DIR, itemTitle + ".mp3");
-                    audioFile.mkdirs();
+                    File dir = new File(Environment.getExternalStorageDirectory(), STORAGE_DIR);
+                    dir.mkdirs();
+                    audioFile = new File(dir, removeSpaces(itemTitle) + ".mp3");
+
+                    //TODO: DELETE AFTER TESTING:
+                    Log.d("---Test---", "Creating file " + audioFile.getAbsolutePath());
+
                     if (audioFile.exists()) {
-                        if (audioFile.getTotalSpace() == totalSize) {
+                        if (audioFile.getTotalSpace() >= totalSize) {
                             // file is already fully downloaded
                             mEventManager.postEvent(new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADED));
                         } else {
@@ -155,12 +161,15 @@ public class PersistentStorageManager {
                     } else {
                         audioFile.createNewFile();
                     }
+
                     FileOutputStream fileOutput = new FileOutputStream(audioFile);
+                    byte data[] = new byte[1024];
+
                     int downloadedSize = 0;
                     int downloadedMb = 1;
-                    while ((current = bis.read()) != -1) {
-                        fileOutput.write(current);
-                        downloadedSize += current;
+                    while ((current = bis.read(data)) != -1) {
+                        fileOutput.write(data, 0, current);
+                        downloadedSize+=current;
                         // send updates only on each Mb to avoid redundant work related to posting
                         // and handling this event
                         if ((downloadedSize / (1024 * 1024)) > downloadedMb) {
@@ -172,6 +181,7 @@ public class PersistentStorageManager {
                     }
                     fileOutput.flush();
                     fileOutput.close();
+                    bis.close();
 
                     mEventManager.postEvent(
                             new DownloadUpdateEvent(itemTitle, DownloadStatus.DOWNLOADED));
@@ -208,7 +218,16 @@ public class PersistentStorageManager {
                 downloadingItems.remove(itemTitle);
                 return true;
             } else {
-                return itemFuture.cancel(true);
+                boolean cancelled = itemFuture.cancel(true);
+                if (cancelled) {
+                    File file = new File(STORAGE_FULL_PATH, removeSpaces(itemTitle));
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
             }
         } else {
             return true;
@@ -220,7 +239,7 @@ public class PersistentStorageManager {
         Log.d("---Test---", "Deleting file " + itemTitle + ".mp3");
 
         boolean deleted = true;
-        File file = new File(STORAGE_DIR, itemTitle + ".mp3");
+        File file = new File(STORAGE_FULL_PATH, removeSpaces(itemTitle) + ".mp3");
         if (file.exists()) {
             deleted = file.delete();
             //TODO: DELETE AFTER TESTING:
@@ -229,6 +248,10 @@ public class PersistentStorageManager {
         if (deleted) {
             mEventManager.postEvent(new DownloadUpdateEvent(itemTitle, DownloadStatus.DELETED));
         }
+    }
+
+    private static String removeSpaces(String string) {
+        return string.replace(" ", "");
     }
 
     public enum DownloadStatus {

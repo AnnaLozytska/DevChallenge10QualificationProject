@@ -5,6 +5,7 @@
 
     <string name="just_now">Just now</string>
 
+    <string name="dialog_cancel_download_message">Do you want to cancel download of %s?</string>
     <string name="dialog_downloaded_title">%s downloaded</string>
     <string name="dialog_downloaded_message">Podcast %s is saved on your device</string>
     <string name="delete">Delete</string>
