@@ -24,22 +24,7 @@ import devchallenge.android.radiotplayer.service.PlayerService;
 
 public class MainActivity extends AppCompatActivity implements EventListener {
 
-    private PlayerService mPlayer;
-    boolean mIsPlayerBound = false;
-    private ServiceConnection mPlayerConnection = new ServiceConnection(){
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            PlayerService.PlayerBinder binder = (PlayerService.PlayerBinder)service;
-            mPlayer = binder.getPlayer();
-            mIsPlayerBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mIsPlayerBound = false;
-        }
-    };
 
     private ImageButton mSync;
     private View.OnClickListener mStartSyncListener = new View.OnClickListener() {

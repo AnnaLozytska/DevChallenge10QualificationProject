@@ -9,7 +9,9 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <LinearLayout
+        android:id="@+id/controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -36,4 +38,10 @@
             android:src="@drawable/ic_next" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/playing_title"
+        android:layout_above="@+id/controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </RelativeLayout>
