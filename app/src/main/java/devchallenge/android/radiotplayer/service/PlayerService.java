@@ -144,7 +144,7 @@ public class PlayerService extends Service implements AudioManager.OnAudioFocusC
     public void previous() {
         PodcastInfoModel previous;
         if (mCurrentPodcast != null && mQueueManager.hasPrevious(mCurrentPodcast.getTitle())) {
-            previous = mQueueManager.getPreviousItem(mCurrentPodcast.toString());
+            previous = mQueueManager.getPreviousItem(mCurrentPodcast.getTitle());
             play(previous);
         }
     }
